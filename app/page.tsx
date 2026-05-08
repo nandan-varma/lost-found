@@ -10,19 +10,22 @@ export default function Home() {
         <ModeSwitcher />
       </header>
       <div className="flex h-screen flex-col items-center justify-center gap-5 px-5 text-center">
-        <Image
-          alt="Better Auth"
-          className="rounded-lg dark:invert"
-          height={100}
-          src="/better-auth-starter.png"
-          width={100}
-        />
+        <div className="relative size-24">
+          <Image
+            alt="Lost and Found"
+            className="rounded-lg dark:invert"
+            fill
+            priority
+            sizes="96px"
+            src="/better-auth-starter.png"
+          />
+        </div>
 
-        <h1 className="font-bold text-4xl">Better Auth Starter</h1>
+        <h1 className="font-bold text-4xl">Lost and Found</h1>
 
-        <p className="text-lg">
-          This is a starter project for Better Auth. It is a simple project that
-          uses Better Auth to authenticate users.
+        <p className="max-w-md text-lg text-muted-foreground">
+          Find what&apos;s lost. Return what&apos;s found. A simple way for your
+          organization to track lost and found items.
         </p>
 
         <div className="flex gap-2">
@@ -30,7 +33,7 @@ export default function Home() {
             <Button>Login</Button>
           </Link>
           <Link href="/signup">
-            <Button>Signup</Button>
+            <Button variant="outline">Sign Up</Button>
           </Link>
         </div>
       </div>

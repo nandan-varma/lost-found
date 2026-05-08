@@ -1,21 +1,35 @@
-import AllUsers from "@/components/all-users";
-import MembersTable from "@/components/members-table";
+import { ItemList } from "@/components/items/item-list";
+import { getItems } from "@/server/items";
 import { getOrganizationBySlug } from "@/server/organizations";
-import { getUsers } from "@/server/users";
 
 type Params = Promise<{ slug: string }>;
 
-export default async function OrganizationPage({ params }: { params: Params }) {
+export default async function OrganizationItemsPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: Promise<{ status?: string }>;
+}) {
   const { slug } = await params;
+  const { status } = await searchParams;
 
   const organization = await getOrganizationBySlug(slug);
-  const users = await getUsers(organization?.id || "");
+
+  if (!organization) {
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        Organization not found
+      </div>
+    );
+  }
+
+  const items = await getItems(
+    organization.id,
+    status as "lost" | "found" | undefined
+  );
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 py-10">
-      <h1 className="font-bold text-2xl">{organization?.name}</h1>
-      <MembersTable members={organization?.members || []} />
-      <AllUsers organizationId={organization?.id || ""} users={users} />
-    </div>
+    <ItemList activeStatus={status} items={items} organizationSlug={slug} />
   );
 }
