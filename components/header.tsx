@@ -1,11 +1,9 @@
-import { getOrganizations } from "@/server/organizations";
+import type { Organization } from "@/db/schema";
 import { Logout } from "./logout";
 import { ModeSwitcher } from "./mode-switcher";
 import { OrganizationSwitcher } from "./organization-switcher";
 
-export async function Header() {
-  const organizations = await getOrganizations();
-
+export function Header({ organizations }: { organizations: Organization[] }) {
   return (
     <header className="absolute top-0 right-0 flex w-full items-center justify-between p-4">
       <OrganizationSwitcher organizations={organizations} />
