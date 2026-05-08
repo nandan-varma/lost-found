@@ -20,6 +20,7 @@ const R2_ENDPOINT = getEnv("R2_ENDPOINT");
 const R2_ACCESS_KEY_ID = getEnv("R2_ACCESS_KEY_ID");
 const R2_SECRET_ACCESS_KEY = getEnv("R2_SECRET_ACCESS_KEY");
 const R2_BUCKET_NAME = getEnv("R2_BUCKET_NAME");
+const R2_PUBLIC_URL = getEnv("R2_PUBLIC_URL");
 
 const client = new S3Client({
   region: R2_REGION,
@@ -55,7 +56,7 @@ export async function uploadFile(
     })
   );
 
-  const url = `${R2_ENDPOINT}/${R2_BUCKET_NAME}/${key}`;
+  const url = `${R2_PUBLIC_URL}/${key}`;
 
   return { url, key };
 }
