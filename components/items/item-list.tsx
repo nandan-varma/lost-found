@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Item, ItemImage } from "@/db/schema";
 import { ItemCard } from "./item-card";
 
@@ -13,29 +14,23 @@ export function ItemList({
   organizationSlug,
   activeStatus,
 }: ItemListProps) {
+  const baseHref = `/dashboard/organization/${organizationSlug}`;
+
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
-        {["all", "lost", "found"].map((status) => (
-          <Link
-            className={`rounded-md px-4 py-2 font-medium text-sm transition-colors ${
-              (status === "all" && !activeStatus) || status === activeStatus
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-            href={
-              status === "all"
-                ? `/dashboard/organization/${organizationSlug}`
-                : `/dashboard/organization/${organizationSlug}?status=${status}`
-            }
-            key={status}
-          >
-            {status === "all"
-              ? "All"
-              : status.charAt(0).toUpperCase() + status.slice(1)}
+      <Tabs value={activeStatus ?? "all"}>
+        <TabsList>
+          <Link href={baseHref} legacyBehavior passHref>
+            <TabsTrigger value="all">All</TabsTrigger>
           </Link>
-        ))}
-      </div>
+          <Link href={`${baseHref}?status=lost`} legacyBehavior passHref>
+            <TabsTrigger value="lost">Lost</TabsTrigger>
+          </Link>
+          <Link href={`${baseHref}?status=found`} legacyBehavior passHref>
+            <TabsTrigger value="found">Found</TabsTrigger>
+          </Link>
+        </TabsList>
+      </Tabs>
 
       {items.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">
@@ -43,7 +38,7 @@ export function ItemList({
           <p className="mt-1 text-sm">{emptyMessage(activeStatus)}</p>
           <Link
             className="mt-4 inline-block font-medium text-primary text-sm underline underline-offset-4 hover:text-primary/80"
-            href={`/dashboard/organization/${organizationSlug}/post`}
+            href={`${baseHref}/post`}
           >
             Post an item
           </Link>

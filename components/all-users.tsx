@@ -1,12 +1,12 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import type { User } from "@/db/schema";
 import { authClient } from "@/lib/auth-client";
-import { Button } from "./ui/button";
 
 interface AllUsersProps {
   users: User[];
@@ -14,12 +14,12 @@ interface AllUsersProps {
 }
 
 export default function AllUsers({ users, organizationId }: AllUsersProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const router = useRouter();
 
   const handleInviteMember = async (user: User) => {
     try {
-      setIsLoading(true);
+      setLoadingUserId(user.id);
       const { error } = await authClient.organization.inviteMember({
         email: user.email,
         role: "member",
@@ -31,35 +31,54 @@ export default function AllUsers({ users, organizationId }: AllUsersProps) {
         return;
       }
 
-      setIsLoading(false);
-      toast.success("Invitation sent to member");
+      toast.success(`Invitation sent to ${user.name}`);
       router.refresh();
     } catch (error) {
       toast.error("Failed to invite member to organization");
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setLoadingUserId(null);
     }
   };
 
+  if (users.length === 0) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        No users available to invite.
+      </p>
+    );
+  }
+
   return (
-    <div>
-      <div className="flex flex-col gap-2">
-        {users.map((user) => (
-          <div key={user.id}>
-            <Button
-              disabled={isLoading}
-              onClick={() => handleInviteMember(user)}
-            >
-              {isLoading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                `Invite ${user.name} to organization`
-              )}
-            </Button>
+    <div className="grid gap-2 sm:grid-cols-2">
+      {users.map((user) => (
+        <div
+          className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3"
+          key={user.id}
+        >
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-sm">{user.name}</p>
+            <p className="truncate text-muted-foreground text-xs">
+              {user.email}
+            </p>
           </div>
-        ))}
-      </div>
+          <Button
+            disabled={loadingUserId === user.id}
+            onClick={() => handleInviteMember(user)}
+            size="sm"
+            variant="outline"
+          >
+            {loadingUserId === user.id ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <>
+                <UserPlus className="mr-1 size-3" />
+                Invite
+              </>
+            )}
+          </Button>
+        </div>
+      ))}
     </div>
   );
 }

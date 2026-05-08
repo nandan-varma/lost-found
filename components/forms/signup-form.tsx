@@ -69,7 +69,7 @@ export function SignupForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+          <CardTitle className="text-xl">Create an account</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -84,7 +84,7 @@ export function SignupForm({
                         <FormItem>
                           <FormLabel>Username</FormLabel>
                           <FormControl>
-                            <Input placeholder="shadcn" {...field} />
+                            <Input placeholder="yourname" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

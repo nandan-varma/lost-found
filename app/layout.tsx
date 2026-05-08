@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Better Auth Starter",
+  title: "Lost and Found",
   description:
-    "Simple starter pack for Better Auth, with Shadcn, Drizzle, and Neon",
+    "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
 };
 
 export default function RootLayout({

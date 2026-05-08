@@ -1,50 +1,41 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface OrgNavProps {
   organizationSlug: string;
 }
 
-const tabs = [
-  { label: "Items", href: "" },
-  { label: "Post Item", href: "/post" },
-  { label: "Members", href: "/members" },
-];
-
 export function OrgNav({ organizationSlug }: OrgNavProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const basePath = `/dashboard/organization/${organizationSlug}`;
 
-  const activeTab = tabs.find((tab) => {
-    const tabHref = `${basePath}${tab.href}`;
-    if (tab.href === "") {
-      return pathname === tabHref || pathname.startsWith(`${tabHref}/items/`);
+  function getTabValue(): string {
+    if (pathname.startsWith(`${basePath}/post`)) {
+      return "post";
     }
-    return pathname.startsWith(tabHref);
-  });
+    if (pathname.startsWith(`${basePath}/members`)) {
+      return "members";
+    }
+    return "items";
+  }
+
+  const tabValue = getTabValue();
 
   return (
-    <nav className="flex gap-1 border-b">
-      {tabs.map((tab) => {
-        const href = `${basePath}${tab.href}`;
-        const isActive = activeTab?.href === tab.href;
-
-        return (
-          <Link
-            className={`px-4 py-2 font-medium text-sm transition-colors ${
-              isActive
-                ? "border-primary border-b-2 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            href={href}
-            key={tab.href}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <Tabs
+      onValueChange={(value) =>
+        router.push(`${basePath}${value === "items" ? "" : `/${value}`}`)
+      }
+      value={tabValue}
+    >
+      <TabsList variant="line">
+        <TabsTrigger value="items">Items</TabsTrigger>
+        <TabsTrigger value="post">Post Item</TabsTrigger>
+        <TabsTrigger value="members">Members</TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }

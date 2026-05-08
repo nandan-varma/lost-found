@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { FileSearch } from "lucide-react";
 import Link from "next/link";
 import { SignupForm } from "@/components/forms/signup-form";
 
@@ -11,15 +11,9 @@ export default function SignupPage() {
           href="/"
         >
           <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Image
-              alt="Better Auth Starter Logo"
-              height={50}
-              priority
-              src={"/better-auth-starter.png"}
-              width={50}
-            />
+            <FileSearch className="size-4" />
           </div>
-          Better Auth Starter
+          Lost and Found
         </Link>
         <SignupForm />
       </div>

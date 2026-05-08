@@ -1,8 +1,8 @@
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Claim, Item, ItemImage, User } from "@/db/schema";
 import { ClaimForm } from "./claim-form";
+import { ImageGallery } from "./image-gallery";
 import { ItemActions } from "./item-actions";
 import { StatusBadge } from "./status-badge";
 
@@ -22,8 +22,6 @@ export function ItemDetail({
   organizationSlug,
   isOwnerOrAdmin,
 }: ItemDetailProps) {
-  const mainImage = i.images[0];
-
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="space-y-4">
@@ -38,37 +36,10 @@ export function ItemDetail({
           <StatusBadge status={i.status} />
         </div>
 
-        {mainImage && (
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-            <Image
-              alt={i.title}
-              className="object-cover"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-              src={mainImage.url}
-            />
-          </div>
-        )}
-
-        {i.images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto">
-            {i.images.map((img) => (
-              <div
-                className="relative aspect-video h-20 shrink-0 overflow-hidden rounded-md bg-muted"
-                key={img.id}
-              >
-                <Image
-                  alt={i.title}
-                  className="object-cover"
-                  fill
-                  sizes="80px"
-                  src={img.url}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <ImageGallery
+          alt={i.title}
+          images={i.images.map((img) => ({ id: img.id, url: img.url }))}
+        />
 
         <p className="text-muted-foreground">{i.description}</p>
       </div>

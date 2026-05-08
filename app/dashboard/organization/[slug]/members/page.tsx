@@ -37,8 +37,10 @@ export default async function MembersPage({ params }: { params: Params }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
       <div>
-        <h1 className="font-bold text-2xl">{organization?.name}</h1>
-        <p className="text-muted-foreground text-sm">Manage members</p>
+        <h1 className="font-bold text-2xl">Members</h1>
+        <p className="text-muted-foreground text-sm">
+          Manage members and organization settings
+        </p>
       </div>
 
       {isAdmin && organization && (
@@ -48,9 +50,16 @@ export default async function MembersPage({ params }: { params: Params }) {
         />
       )}
 
-      <MembersTable members={organization?.members || []} />
+      <div>
+        <h2 className="mb-3 font-semibold text-lg">Current Members</h2>
+        <MembersTable members={organization?.members || []} />
+      </div>
+
       {isAdmin && (
-        <AllUsers organizationId={organization?.id || ""} users={users} />
+        <div>
+          <h2 className="mb-3 font-semibold text-lg">Invite Members</h2>
+          <AllUsers organizationId={organization?.id || ""} users={users} />
+        </div>
       )}
     </div>
   );
