@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Item, ItemImage } from "@/db/schema";
 import { ItemCard } from "./item-card";
@@ -14,21 +17,23 @@ export function ItemList({
   organizationSlug,
   activeStatus,
 }: ItemListProps) {
+  const router = useRouter();
   const baseHref = `/dashboard/organization/${organizationSlug}`;
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeStatus ?? "all"}>
+      <Tabs
+        onValueChange={(value) =>
+          router.push(
+            value === "all" ? baseHref : `${baseHref}?status=${value}`
+          )
+        }
+        value={activeStatus ?? "all"}
+      >
         <TabsList>
-          <Link href={baseHref} legacyBehavior passHref>
-            <TabsTrigger value="all">All</TabsTrigger>
-          </Link>
-          <Link href={`${baseHref}?status=lost`} legacyBehavior passHref>
-            <TabsTrigger value="lost">Lost</TabsTrigger>
-          </Link>
-          <Link href={`${baseHref}?status=found`} legacyBehavior passHref>
-            <TabsTrigger value="found">Found</TabsTrigger>
-          </Link>
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="lost">Lost</TabsTrigger>
+          <TabsTrigger value="found">Found</TabsTrigger>
         </TabsList>
       </Tabs>
 
