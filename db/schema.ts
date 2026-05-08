@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { relations } from "drizzle-orm";
 import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
@@ -73,6 +74,7 @@ export const organization = pgTable("organization", {
 
 export const organizationRelations = relations(organization, ({ many }) => ({
   members: many(member),
+  items: many(item),
 }));
 
 export type Organization = typeof organization.$inferSelect;
@@ -80,6 +82,99 @@ export type Organization = typeof organization.$inferSelect;
 export const role = pgEnum("role", ["member", "admin", "owner"]);
 
 export type Role = (typeof role.enumValues)[number];
+
+export const itemStatus = pgEnum("item_status", [
+  "lost",
+  "found",
+  "claimed",
+  "closed",
+]);
+
+export type ItemStatus = (typeof itemStatus.enumValues)[number];
+
+export const item = pgTable("item", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => /* @__PURE__ */ randomUUID()),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: itemStatus("status").default("lost").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const itemRelations = relations(item, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [item.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [item.userId],
+    references: [user.id],
+  }),
+  images: many(itemImage),
+  claim: one(claim),
+}));
+
+export type Item = typeof item.$inferSelect;
+
+export const itemImage = pgTable("item_image", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => /* @__PURE__ */ randomUUID()),
+  itemId: text("item_id")
+    .notNull()
+    .references(() => item.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  key: text("key").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const itemImageRelations = relations(itemImage, ({ one }) => ({
+  item: one(item, {
+    fields: [itemImage.itemId],
+    references: [item.id],
+  }),
+}));
+
+export type ItemImage = typeof itemImage.$inferSelect;
+
+export const claim = pgTable("claim", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => /* @__PURE__ */ randomUUID()),
+  itemId: text("item_id")
+    .notNull()
+    .unique()
+    .references(() => item.id, { onDelete: "cascade" }),
+  claimantName: text("claimant_name").notNull(),
+  claimantEmail: text("claimant_email").notNull(),
+  message: text("message"),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const claimRelations = relations(claim, ({ one }) => ({
+  item: one(item, {
+    fields: [claim.itemId],
+    references: [item.id],
+  }),
+}));
+
+export type Claim = typeof claim.$inferSelect;
 
 export const member = pgTable("member", {
   id: text("id").primaryKey(),
@@ -132,6 +227,12 @@ export const schema = {
   organization,
   member,
   invitation,
+  item,
+  itemImage,
+  claim,
   organizationRelations,
   memberRelations,
+  itemRelations,
+  itemImageRelations,
+  claimRelations,
 };
