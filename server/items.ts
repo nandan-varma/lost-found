@@ -42,7 +42,6 @@ export async function getItem(itemId: string) {
       images: true,
       user: true,
       claim: true,
-      organization: true,
     },
   });
 
@@ -54,19 +53,6 @@ export async function getItem(itemId: string) {
 
   if (!member) {
     return null;
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  const isViewerPosterOrAdmin =
-    session?.user.id === itemRecord.userId ||
-    (itemRecord.claim && (await isOrgMember(itemRecord.organizationId)));
-
-  if (!isViewerPosterOrAdmin && itemRecord.claim) {
-    const { claim: _, ...rest } = itemRecord;
-    return rest;
   }
 
   return itemRecord;
