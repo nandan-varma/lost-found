@@ -1,11 +1,14 @@
 "use server";
 
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { db } from "@/db/drizzle";
+import { item, member } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-export const isAdmin = async () => {
+export const isAdmin = async (): Promise<boolean> => {
   try {
-    const { success, error } = await auth.api.hasPermission({
+    const { success } = await auth.api.hasPermission({
       headers: await headers(),
       body: {
         permissions: {
@@ -14,19 +17,70 @@ export const isAdmin = async () => {
       },
     });
 
-    if (error) {
-      return {
-        success: false,
-        error: error || "Failed to check permissions",
-      };
-    }
-
     return success;
   } catch (error) {
     console.error(error);
-    return {
-      success: false,
-      error: error || "Failed to check permissions",
-    };
+    return false;
+  }
+};
+
+export const isOrgMember = async (organizationId: string): Promise<boolean> => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    const membership = await db.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, organizationId),
+        eq(member.userId, session.user.id)
+      ),
+    });
+
+    return !!membership;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+export const isItemOwnerOrAdmin = async (itemId: string): Promise<boolean> => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    const itemRecord = await db.query.item.findFirst({
+      where: eq(item.id, itemId),
+    });
+
+    if (!itemRecord) {
+      return false;
+    }
+
+    if (itemRecord.userId === session.user.id) {
+      return true;
+    }
+
+    const membership = await db.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, itemRecord.organizationId),
+        eq(member.userId, session.user.id),
+        eq(member.role, "admin")
+      ),
+    });
+
+    return !!membership;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };
