@@ -1,11 +1,13 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { eq, inArray, not } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { member, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { findOrgByDomain } from "./organizations";
 
 export const getCurrentUser = async () => {
   const session = await auth.api.getSession({
@@ -59,13 +61,26 @@ export const signUp = async (
   username: string
 ) => {
   try {
-    await auth.api.signUpEmail({
+    const { user: newUser } = await auth.api.signUpEmail({
       body: {
         email,
         password,
         name: username,
       },
     });
+
+    const domain = email.split("@")[1];
+    const org = await findOrgByDomain(domain);
+
+    if (org) {
+      await db.insert(member).values({
+        id: randomUUID(),
+        organizationId: org.id,
+        userId: newUser.id,
+        role: "member",
+        createdAt: new Date(),
+      });
+    }
 
     return {
       success: true,

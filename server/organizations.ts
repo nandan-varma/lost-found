@@ -1,8 +1,10 @@
 "use server";
 
 import { eq, inArray } from "drizzle-orm";
+import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
 import { member, organization } from "@/db/schema";
+import { auth } from "@/lib/auth";
 import { getCurrentUser } from "./users";
 
 export async function getOrganizations() {
@@ -36,6 +38,68 @@ export async function getActiveOrganization(userId: string) {
   });
 
   return activeOrganization;
+}
+
+export async function findOrgByDomain(domain: string) {
+  try {
+    const org = await db.query.organization.findFirst({
+      where: eq(organization.domain, domain),
+    });
+
+    return org;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function updateOrganizationDomain(orgId: string, domain: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return { success: false as const, error: "Not authenticated" };
+    }
+
+    const { success } = await auth.api.hasPermission({
+      headers: await headers(),
+      body: {
+        permissions: {
+          organization: ["update", "delete"],
+        },
+      },
+    });
+
+    if (!success) {
+      return {
+        success: false as const,
+        error: "Only admins can update organization settings",
+      };
+    }
+
+    const existing = await db.query.organization.findFirst({
+      where: eq(organization.domain, domain),
+    });
+
+    if (existing && existing.id !== orgId) {
+      return {
+        success: false as const,
+        error: "This domain is already in use by another organization",
+      };
+    }
+
+    await db
+      .update(organization)
+      .set({ domain: domain || null })
+      .where(eq(organization.id, orgId));
+
+    return { success: true as const, error: null };
+  } catch (error) {
+    console.error(error);
+    return { success: false as const, error: "Failed to update domain" };
+  }
 }
 
 export async function getOrganizationBySlug(slug: string) {
