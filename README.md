@@ -1,7 +1,7 @@
 
 ## Overview
 
-This is a Starter is simple starter pack using Next.js, Better Auth, Shadcn, Drizzle, and Neon
+This is a lost and found application for organizations.
 
 ## Getting Started
 
@@ -15,7 +15,9 @@ pnpm i
 
 # Development Server
 
-After installing the dependencies, and adding configuration variables run the development server:
+After installing the dependencies, and adding configuration variables and running database migrations
+
+run the development server:
 
 ```bash
 pnpm dev
