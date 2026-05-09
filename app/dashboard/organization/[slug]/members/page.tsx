@@ -9,6 +9,7 @@ import { MembersTableSkeleton } from "@/components/skeletons";
 import { db } from "@/db/drizzle";
 import { member } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { getOrganizationMembers } from "@/server/members";
 import { getOrganizationBySlug } from "@/server/organizations";
 import { getUsers } from "@/server/users";
 
@@ -16,6 +17,7 @@ type Params = Promise<{ slug: string }>;
 
 async function MembersContent({ organizationId }: { organizationId: string }) {
   const users = await getUsers(organizationId);
+  const members = await getOrganizationMembers(organizationId);
 
   return (
     <>
@@ -24,7 +26,7 @@ async function MembersContent({ organizationId }: { organizationId: string }) {
         <Suspense fallback={<MembersTableSkeleton />}>
           <div className="rounded-lg border">
             <div className="p-4">
-              <MembersTable members={[]} />
+              <MembersTable members={members} />
             </div>
           </div>
         </Suspense>

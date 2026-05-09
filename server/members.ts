@@ -59,3 +59,18 @@ export const removeMember = async (memberId: string) => {
     };
   }
 };
+
+export const getOrganizationMembers = async (organizationId: string) => {
+  try {
+    const members = await db.query.member.findMany({
+      where: eq(member.organizationId, organizationId),
+      with: {
+        user: true,
+      },
+    });
+
+    return members;
+  } catch {
+    throw new Error("Failed to fetch organization members.");
+  }
+};
