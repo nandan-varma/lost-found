@@ -23,17 +23,21 @@ export function ItemDetail({
   isOwnerOrAdmin,
 }: ItemDetailProps) {
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="space-y-8">
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="font-bold text-2xl">{i.title}</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words font-bold text-2xl sm:text-3xl">
+              {i.title}
+            </h1>
             <p className="mt-1 text-muted-foreground text-sm">
               Posted by {i.user.name} &middot;{" "}
               {new Date(i.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <StatusBadge status={i.status} />
+          <div className="shrink-0">
+            <StatusBadge status={i.status} />
+          </div>
         </div>
 
         <ImageGallery
@@ -41,7 +45,9 @@ export function ItemDetail({
           images={i.images.map((img) => ({ id: img.id, url: img.url }))}
         />
 
-        <p className="text-muted-foreground">{i.description}</p>
+        <p className="text-base text-muted-foreground leading-relaxed">
+          {i.description}
+        </p>
       </div>
 
       {i.status === "found" && !isOwnerOrAdmin && (

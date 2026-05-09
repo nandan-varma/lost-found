@@ -48,65 +48,86 @@ export default async function Home() {
   }
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-6 py-4">
-        <Link className="font-bold text-lg tracking-tight" href="/">
-          Lost and Found
-        </Link>
-        <div className="flex items-center gap-3">
-          <ModeSwitcher />
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/login">Get started</Link>
-          </Button>
+      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
+          <Link
+            className="font-bold text-sm tracking-tight sm:text-base"
+            href="/"
+          >
+            Lost and Found
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ModeSwitcher />
+            <Button
+              asChild
+              className="xs:inline-flex hidden"
+              size="sm"
+              variant="ghost"
+            >
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button asChild className="text-xs sm:text-sm" size="sm">
+              <Link href="/login">
+                <span className="xs:inline hidden">Get started</span>
+                <span className="inline xs:hidden">Sign up</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="flex flex-1 flex-col">
-        <section className="flex flex-col items-center px-6 pt-24 pb-16 text-center md:pt-32 md:pb-20">
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border bg-muted px-3 py-1 text-muted-foreground text-xs">
+        <section className="flex flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-16 md:py-32">
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border bg-muted px-2 py-1 text-muted-foreground text-xs sm:px-3 sm:py-1">
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-green-500" />
             </span>
-            Track lost items across your organization
+            <span className="xs:inline hidden">
+              Track lost items across your organization
+            </span>
+            <span className="inline xs:hidden">Manage lost & found</span>
           </div>
 
-          <h1 className="max-w-3xl font-bold text-4xl tracking-tight md:text-6xl">
+          <h1 className="max-w-3xl font-bold text-3xl tracking-tight sm:text-4xl md:text-6xl">
             Find what&apos;s lost.
             <br />
             Return what&apos;s found.
           </h1>
 
-          <p className="mt-6 max-w-lg text-muted-foreground md:text-lg">
+          <p className="mt-4 max-w-lg text-muted-foreground text-sm sm:mt-6 sm:text-base md:text-lg">
             A simple way for your organization to track lost and found items.
             Report, browse, and claim items — all in one place.
           </p>
 
-          <div className="mt-8 flex gap-3">
-            <Button asChild size="lg">
+          <div className="mt-6 flex xs:flex-row flex-col gap-2 xs:gap-3 sm:mt-8">
+            <Button asChild className="text-sm xs:text-base" size="lg">
               <Link href="/login">
                 Get started
                 <ArrowRight className="ml-1 size-4" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button
+              asChild
+              className="text-sm xs:text-base"
+              size="lg"
+              variant="outline"
+            >
               <Link href="/login">Log in</Link>
             </Button>
           </div>
         </section>
 
-        <section className="border-t bg-muted/30 px-6 py-16 md:py-24">
+        <section className="border-t bg-muted/30 px-4 py-12 sm:px-6 sm:py-16 md:py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight md:text-3xl">
+            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight sm:text-3xl">
               How it works
             </h2>
-            <p className="mb-12 text-center text-muted-foreground">
+            <p className="mb-8 text-center text-muted-foreground text-sm sm:mb-12">
               Three simple steps to reunite lost items with their owners
             </p>
 
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
               {[
                 {
                   step: "01",
@@ -131,33 +152,37 @@ export default async function Home() {
                   <div className="flex size-10 items-center justify-center rounded-lg border bg-background font-mono text-muted-foreground text-sm">
                     {item.step}
                   </div>
-                  <h3 className="font-semibold text-xl">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                  <h3 className="font-semibold text-lg sm:text-xl">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="px-6 py-16 md:py-24">
+        <section className="px-4 py-12 sm:px-6 sm:py-16 md:py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight md:text-3xl">
+            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight sm:text-3xl">
               Everything you need
             </h2>
-            <p className="mb-12 text-center text-muted-foreground">
+            <p className="mb-8 text-center text-muted-foreground text-sm sm:mb-12">
               Features designed to make lost and found management effortless
             </p>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {features.map((feature) => (
                 <div
-                  className="space-y-2 rounded-lg border bg-card p-6 transition-shadow hover:shadow-sm"
+                  className="space-y-2 rounded-lg border bg-card p-4 transition-shadow hover:shadow-sm sm:p-6"
                   key={feature.title}
                 >
                   <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <feature.icon className="size-5" />
                   </div>
-                  <h3 className="font-semibold">{feature.title}</h3>
+                  <h3 className="font-semibold text-base">{feature.title}</h3>
                   <p className="text-muted-foreground text-sm">
                     {feature.description}
                   </p>
@@ -167,23 +192,28 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="border-t bg-muted/30 px-6 py-16 text-center md:py-24">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="font-bold text-2xl tracking-tight md:text-3xl">
+        <section className="border-t bg-muted/30 px-4 py-12 text-center sm:px-6 sm:py-16 md:py-24">
+          <div className="mx-auto max-w-2xl space-y-4">
+            <h2 className="font-bold text-2xl tracking-tight sm:text-3xl">
               Ready to get started?
             </h2>
-            <p className="mt-3 text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Sign in and join an organization to start tracking lost and found
               items today.
             </p>
-            <div className="mt-8 flex justify-center gap-3">
-              <Button asChild size="lg">
+            <div className="mt-6 flex xs:flex-row flex-col xs:justify-center gap-2 xs:gap-3 sm:mt-8">
+              <Button asChild className="text-sm xs:text-base" size="lg">
                 <Link href="/login">
                   Get started
                   <ArrowRight className="ml-1 size-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button
+                asChild
+                className="text-sm xs:text-base"
+                size="lg"
+                variant="outline"
+              >
                 <Link href="/login">Log in</Link>
               </Button>
             </div>

@@ -30,7 +30,7 @@ export function ItemList({
         }
         value={activeStatus ?? "all"}
       >
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="lost">Lost</TabsTrigger>
           <TabsTrigger value="found">Found</TabsTrigger>
@@ -38,9 +38,11 @@ export function ItemList({
       </Tabs>
 
       {items.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          <p className="text-lg">No items found</p>
-          <p className="mt-1 text-sm">{emptyMessage(activeStatus)}</p>
+        <div className="rounded-lg border border-dashed bg-muted/30 py-12 text-center sm:py-16">
+          <p className="font-medium text-lg">No items found</p>
+          <p className="mt-1 text-muted-foreground text-sm">
+            {emptyMessage(activeStatus)}
+          </p>
           <Link
             className="mt-4 inline-block font-medium text-primary text-sm underline underline-offset-4 hover:text-primary/80"
             href={`${baseHref}/post`}
@@ -49,7 +51,7 @@ export function ItemList({
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {items.map((i) => (
             <ItemCard item={i} key={i.id} organizationSlug={organizationSlug} />
           ))}

@@ -1,18 +1,26 @@
+import { Suspense } from "react";
 import { Header } from "@/components/header";
+import { HeaderSkeleton } from "@/components/skeletons";
 import { getOrganizations } from "@/server/organizations";
 import { getCurrentUser } from "@/server/users";
 
-export default async function DashboardLayout({
+async function HeaderContent() {
+  const { currentUser } = await getCurrentUser();
+  const organizations = await getOrganizations();
+
+  return <Header organizations={organizations} user={currentUser} />;
+}
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { currentUser } = await getCurrentUser();
-  const organizations = await getOrganizations();
-
   return (
     <div>
-      <Header organizations={organizations} user={currentUser} />
+      <Suspense fallback={<HeaderSkeleton />}>
+        <HeaderContent />
+      </Suspense>
       {children}
     </div>
   );

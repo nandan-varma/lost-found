@@ -2,7 +2,9 @@ import { ArrowLeft } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 import { ItemDetail } from "@/components/items/item-detail";
+import { ItemDetailSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { getItem } from "@/server/items";
@@ -10,18 +12,24 @@ import { isItemOwnerOrAdmin } from "@/server/permissions";
 
 type Params = Promise<{ slug: string; itemId: string }>;
 
-export default async function ItemDetailPage({ params }: { params: Params }) {
-  const { slug, itemId } = await params;
-
-  const item = await getItem(itemId);
+async function ItemDetailContent({
+  slug,
+  itemId,
+}: {
+  slug: string;
+  itemId: string;
+}) {
+  // Parallel fetch item and session
+  const [item, session] = await Promise.all([
+    getItem(itemId),
+    auth.api.getSession({
+      headers: await headers(),
+    }),
+  ]);
 
   if (!item) {
     notFound();
   }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
 
   if (!session) {
     redirect("/login");
@@ -30,10 +38,10 @@ export default async function ItemDetailPage({ params }: { params: Params }) {
   const isOwnerOrAdmin = await isItemOwnerOrAdmin(itemId);
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <Button
         asChild
-        className="mb-4 px-0 text-muted-foreground"
+        className="mb-6 px-0 text-muted-foreground"
         size="sm"
         variant="link"
       >
@@ -49,5 +57,15 @@ export default async function ItemDetailPage({ params }: { params: Params }) {
         organizationSlug={slug}
       />
     </div>
+  );
+}
+
+export default async function ItemDetailPage({ params }: { params: Params }) {
+  const { slug, itemId } = await params;
+
+  return (
+    <Suspense fallback={<ItemDetailSkeleton />}>
+      <ItemDetailContent itemId={itemId} slug={slug} />
+    </Suspense>
   );
 }
