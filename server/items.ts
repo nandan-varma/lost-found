@@ -8,7 +8,7 @@ import { claim, type ItemStatus, item, itemImage } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { deleteFile, uploadFile } from "@/lib/r2";
 import { claimItemSchema, createItemSchema } from "@/lib/validations";
-import { isOrgMember } from "./permissions";
+import { isItemOwnerOrAdmin, isOrgMember } from "./permissions";
 
 export async function getItems(organizationId: string, status?: ItemStatus) {
   const member = await isOrgMember(organizationId);
@@ -65,7 +65,12 @@ export async function createItem(formData: FormData) {
   const organizationId = formData.get("organizationId") as string;
   const imageFiles = formData.getAll("images") as File[];
 
-  const parsed = createItemSchema.safeParse({ title, description, status });
+  const parsed = createItemSchema.safeParse({
+    title,
+    description,
+    status,
+    organizationId,
+  });
 
   if (!parsed.success) {
     return {
@@ -160,9 +165,7 @@ export async function updateItemStatus(itemId: string, newStatus: ItemStatus) {
   }
 
   if (itemRecord.userId !== session.user.id) {
-    const admin = await import("./permissions").then((m) =>
-      m.isItemOwnerOrAdmin(itemId)
-    );
+    const admin = await isItemOwnerOrAdmin(itemId);
 
     if (!admin) {
       return {
@@ -296,9 +299,7 @@ export async function deleteItem(itemId: string) {
   }
 
   if (itemRecord.userId !== session.user.id) {
-    const admin = await import("./permissions").then((m) =>
-      m.isItemOwnerOrAdmin(itemId)
-    );
+    const admin = await isItemOwnerOrAdmin(itemId);
 
     if (!admin) {
       return {

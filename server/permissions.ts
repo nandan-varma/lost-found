@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
@@ -74,7 +74,7 @@ export const isItemOwnerOrAdmin = async (itemId: string): Promise<boolean> => {
       where: and(
         eq(member.organizationId, itemRecord.organizationId),
         eq(member.userId, session.user.id),
-        eq(member.role, "admin")
+        inArray(member.role, ["admin", "owner"])
       ),
     });
 

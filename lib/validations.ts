@@ -7,6 +7,7 @@ export const createItemSchema = z.object({
     .min(10, "Description must be at least 10 characters")
     .max(2000),
   status: z.enum(["lost", "found"]),
+  organizationId: z.string().min(1, "Organization is required"),
 });
 
 export const claimItemSchema = z.object({
