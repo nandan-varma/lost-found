@@ -5,11 +5,16 @@ import { CreateOrganizationDialog } from "@/components/forms/create-organization
 import { JoinOrganizationDialog } from "@/components/forms/join-organization-dialog";
 import { getAllOrganizations, getOrganizations } from "@/server/organizations";
 
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ create?: string }>;
+}) {
+  const { create } = await searchParams;
   const organizations = await getOrganizations();
   const allOrganizations = await getAllOrganizations();
 
-  if (organizations.length === 1) {
+  if (!create && organizations.length === 1) {
     redirect(`/dashboard/organization/${organizations[0].slug}`);
   }
 
@@ -49,7 +54,7 @@ export default async function Dashboard() {
             Create or join an organization to get started.
           </p>
           <div className="flex items-center justify-center gap-3">
-            <CreateOrganizationDialog />
+            <CreateOrganizationDialog defaultOpen={!!create} />
             <JoinOrganizationDialog organizations={allOrganizations} />
           </div>
         </div>
@@ -57,7 +62,7 @@ export default async function Dashboard() {
 
       {organizations.length > 0 && (
         <div className="mt-8">
-          <CreateOrganizationDialog variant="outline" />
+          <CreateOrganizationDialog defaultOpen={!!create} variant="outline" />
         </div>
       )}
     </div>

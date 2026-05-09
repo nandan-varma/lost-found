@@ -15,14 +15,16 @@ import {
 import { CreateOrganizationForm } from "./create-organization-form";
 
 interface CreateOrganizationDialogProps {
+  defaultOpen?: boolean;
   variant?: "default" | "outline";
 }
 
 export function CreateOrganizationDialog({
+  defaultOpen = false,
   variant = "default",
 }: CreateOrganizationDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>

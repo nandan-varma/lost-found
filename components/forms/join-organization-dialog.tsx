@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { joinOrganization } from "@/server/organizations";
+import { CreateOrganizationForm } from "./create-organization-form";
+
+const CREATE_ORG_VALUE = "__create__";
 
 interface Organization {
   id: string;
@@ -35,7 +39,8 @@ export function JoinOrganizationDialog({
 }: JoinOrganizationDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+  const [selectedOrgId, setSelectedOrgId] = useState<string>();
+  const [showCreate, setShowCreate] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
   async function handleJoin() {
@@ -57,37 +62,98 @@ export function JoinOrganizationDialog({
     setIsJoining(false);
   }
 
+  function handleValueChange(value: string) {
+    if (value === CREATE_ORG_VALUE) {
+      setShowCreate(true);
+      return;
+    }
+    setSelectedOrgId(value);
+  }
+
+  function handleBackToJoin() {
+    setShowCreate(false);
+    setSelectedOrgId(undefined);
+  }
+
+  function handleCreateSuccess() {
+    setOpen(false);
+    router.refresh();
+  }
+
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          setShowCreate(false);
+          setSelectedOrgId(undefined);
+        }
+      }}
+      open={open}
+    >
       <DialogTrigger asChild>
         <Button variant="outline">Join Organization</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Join Organization</DialogTitle>
-          <DialogDescription>Select an organization to join.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <Select onValueChange={setSelectedOrgId} value={selectedOrgId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select an organization" />
-            </SelectTrigger>
-            <SelectContent>
-              {organizations.map((org) => (
-                <SelectItem key={org.id} value={org.id}>
-                  {org.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            className="w-full"
-            disabled={!selectedOrgId || isJoining}
-            onClick={handleJoin}
-          >
-            {isJoining ? "Joining..." : "Join"}
-          </Button>
-        </div>
+        {showCreate ? (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="-ml-2 size-8"
+                  onClick={handleBackToJoin}
+                  size="icon"
+                  variant="ghost"
+                >
+                  <ArrowLeft className="size-4" />
+                </Button>
+                <div>
+                  <DialogTitle>Create Organization</DialogTitle>
+                  <DialogDescription>
+                    Create a new organization to get started.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            <CreateOrganizationForm onSuccess={handleCreateSuccess} />
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Join Organization</DialogTitle>
+              <DialogDescription>
+                Select an organization to join.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <Select onValueChange={handleValueChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={CREATE_ORG_VALUE}>
+                    <div className="flex items-center gap-2">
+                      <Plus className="size-4" />
+                      Create Organization
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                className="w-full"
+                disabled={!selectedOrgId || isJoining}
+                onClick={handleJoin}
+              >
+                {isJoining ? "Joining..." : "Join"}
+              </Button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
