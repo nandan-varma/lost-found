@@ -16,14 +16,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { createOrganization } from "@/server/organizations";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
   slug: z.string().min(2).max(50),
 });
 
-export function CreateOrganizationForm() {
+interface CreateOrganizationFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateOrganizationForm({
+  onSuccess,
+}: CreateOrganizationFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -37,12 +43,14 @@ export function CreateOrganizationForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-      await authClient.organization.create({
-        name: values.name,
-        slug: values.slug,
-      });
+      const result = await createOrganization(values.name, values.slug);
 
-      toast.success("Organization created successfully");
+      if (result.success) {
+        toast.success("Organization created successfully");
+        onSuccess?.();
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to create organization");

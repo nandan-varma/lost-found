@@ -1,7 +1,10 @@
 import { ArrowRight, Eye, MapPin, Search, Shield, Users } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ModeSwitcher } from "@/components/mode-switcher";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 
 const features = [
   {
@@ -35,7 +38,14 @@ const features = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session) {
+    redirect("/dashboard");
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-6 py-4">
@@ -48,7 +58,7 @@ export default function Home() {
             <Link href="/login">Log in</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/signup">Sign up</Link>
+            <Link href="/login">Get started</Link>
           </Button>
         </div>
       </header>
@@ -76,7 +86,7 @@ export default function Home() {
 
           <div className="mt-8 flex gap-3">
             <Button asChild size="lg">
-              <Link href="/signup">
+              <Link href="/login">
                 Get started
                 <ArrowRight className="ml-1 size-4" />
               </Link>
@@ -163,13 +173,13 @@ export default function Home() {
               Ready to get started?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Create an account and join an organization to start tracking lost
-              and found items today.
+              Sign in and join an organization to start tracking lost and found
+              items today.
             </p>
             <div className="mt-8 flex justify-center gap-3">
               <Button asChild size="lg">
-                <Link href="/signup">
-                  Sign up free
+                <Link href="/login">
+                  Get started
                   <ArrowRight className="ml-1 size-4" />
                 </Link>
               </Button>

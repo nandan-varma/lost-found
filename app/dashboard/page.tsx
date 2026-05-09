@@ -1,5 +1,6 @@
 import { Building2 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CreateOrganizationDialog } from "@/components/forms/create-organization-dialog";
 import { JoinOrganizationDialog } from "@/components/forms/join-organization-dialog";
 import { getAllOrganizations, getOrganizations } from "@/server/organizations";
@@ -7,6 +8,10 @@ import { getAllOrganizations, getOrganizations } from "@/server/organizations";
 export default async function Dashboard() {
   const organizations = await getOrganizations();
   const allOrganizations = await getAllOrganizations();
+
+  if (organizations.length === 1) {
+    redirect(`/dashboard/organization/${organizations[0].slug}`);
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-20">

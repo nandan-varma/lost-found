@@ -85,6 +85,35 @@ export async function joinOrganization(orgId: string) {
   }
 }
 
+export async function createOrganization(name: string, slug: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return { success: false as const, error: "Not authenticated" };
+    }
+
+    const domain = session.user.email.split("@")[1];
+
+    const org = await auth.api.createOrganization({
+      body: { name, slug },
+      headers: await headers(),
+    });
+
+    await db
+      .update(organization)
+      .set({ domain })
+      .where(eq(organization.id, org.id));
+
+    return { success: true as const, error: null };
+  } catch (error) {
+    console.error(error);
+    return { success: false as const, error: "Failed to create organization" };
+  }
+}
+
 export async function findOrgByDomain(domain: string) {
   try {
     const org = await db.query.organization.findFirst({

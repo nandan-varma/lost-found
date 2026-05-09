@@ -1,6 +1,8 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,8 +21,11 @@ interface CreateOrganizationDialogProps {
 export function CreateOrganizationDialog({
   variant = "default",
 }: CreateOrganizationDialogProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button variant={variant}>
           <Plus className="mr-1 size-4" />
@@ -34,7 +39,12 @@ export function CreateOrganizationDialog({
             Create a new organization to get started.
           </DialogDescription>
         </DialogHeader>
-        <CreateOrganizationForm />
+        <CreateOrganizationForm
+          onSuccess={() => {
+            setOpen(false);
+            router.refresh();
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

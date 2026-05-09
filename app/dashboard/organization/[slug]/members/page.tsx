@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import AllUsers from "@/components/all-users";
 import { SetDomainForm } from "@/components/forms/set-domain-form";
 import MembersTable from "@/components/members-table";
@@ -14,25 +15,35 @@ type Params = Promise<{ slug: string }>;
 export default async function MembersPage({ params }: { params: Params }) {
   const { slug } = await params;
 
-  const organization = await getOrganizationBySlug(slug);
-  const users = await getUsers(organization?.id || "");
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  const currentMember =
-    session && organization
-      ? await db.query.member.findFirst({
-          where: and(
-            eq(member.organizationId, organization.id),
-            eq(member.userId, session.user.id)
-          ),
-        })
-      : null;
+  if (!session) {
+    redirect("/login");
+  }
+
+  const organization = await getOrganizationBySlug(slug);
+
+  if (!organization) {
+    redirect("/dashboard");
+  }
+
+  const currentMember = await db.query.member.findFirst({
+    where: and(
+      eq(member.organizationId, organization.id),
+      eq(member.userId, session.user.id)
+    ),
+  });
 
   const isAdmin =
     currentMember?.role === "admin" || currentMember?.role === "owner";
+
+  if (!isAdmin) {
+    redirect(`/dashboard/organization/${slug}`);
+  }
+
+  const users = await getUsers(organization.id);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">

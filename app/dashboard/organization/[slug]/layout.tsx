@@ -1,6 +1,11 @@
+import { and, eq } from "drizzle-orm";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { OrgNav } from "@/components/items/org-nav";
 import { Button } from "@/components/ui/button";
+import { db } from "@/db/drizzle";
+import { member, organization } from "@/db/schema";
+import { auth } from "@/lib/auth";
 
 type Params = Promise<{ slug: string }>;
 
@@ -12,6 +17,27 @@ export default async function OrganizationLayout({
   params: Params;
 }) {
   const { slug } = await params;
+
+  const org = await db.query.organization.findFirst({
+    where: eq(organization.slug, slug),
+  });
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const currentMember =
+    session && org
+      ? await db.query.member.findFirst({
+          where: and(
+            eq(member.organizationId, org.id),
+            eq(member.userId, session.user.id)
+          ),
+        })
+      : null;
+
+  const isAdmin =
+    currentMember?.role === "admin" || currentMember?.role === "owner";
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-20 pb-10">
@@ -25,7 +51,7 @@ export default async function OrganizationLayout({
           <Link href="/dashboard">Dashboard</Link>
         </Button>
       </div>
-      <OrgNav organizationSlug={slug} />
+      <OrgNav isAdmin={isAdmin} organizationSlug={slug} />
       <div className="mt-6">{children}</div>
     </div>
   );

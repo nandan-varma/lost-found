@@ -4,10 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface OrgNavProps {
+  isAdmin: boolean;
   organizationSlug: string;
 }
 
-export function OrgNav({ organizationSlug }: OrgNavProps) {
+export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = `/dashboard/organization/${organizationSlug}`;
@@ -16,7 +17,7 @@ export function OrgNav({ organizationSlug }: OrgNavProps) {
     if (pathname.startsWith(`${basePath}/post`)) {
       return "post";
     }
-    if (pathname.startsWith(`${basePath}/members`)) {
+    if (isAdmin && pathname.startsWith(`${basePath}/members`)) {
       return "members";
     }
     return "items";
@@ -34,7 +35,7 @@ export function OrgNav({ organizationSlug }: OrgNavProps) {
       <TabsList variant="line">
         <TabsTrigger value="items">Items</TabsTrigger>
         <TabsTrigger value="post">Post Item</TabsTrigger>
-        <TabsTrigger value="members">Members</TabsTrigger>
+        {isAdmin && <TabsTrigger value="members">Members</TabsTrigger>}
       </TabsList>
     </Tabs>
   );
