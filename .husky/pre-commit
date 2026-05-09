@@ -1,11 +1,29 @@
-echo '🪓🏗️👹 Preparing orc axes for the mighty project conquest! 👹🏗️🪓'
-echo 'Get ready for battle, this may take a while...'
+# ultracite
+#!/bin/sh
+# Exit on any error
+set -e
 
-pnpm check ||
-(
-    echo "⚔️❌ Grargh, you have encountered an issue in your code. Check the orcish runes! ⚔️❌
-          Run pnpm check, make changes, and try the conquest again.";
-    false;
-)
+# Check if there are any staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$STAGED_FILES" ]; then
+  echo "No staged files to format"
+  exit 0
+fi
 
-echo '🎉 No problems found: initiating orcish conquest now.... ✨🚀🏹🛡️'
+# Run formatter
+pnpm dlx ultracite fix
+FORMAT_EXIT_CODE=$?
+
+# Re-stage files that were already staged
+echo "$STAGED_FILES" | while IFS= read -r file; do
+  if [ -f "$file" ]; then
+    git add "$file"
+  fi
+done
+
+if [ $FORMAT_EXIT_CODE -ne 0 ]; then
+  echo "Ultracite found issues that could not be auto-fixed."
+  exit $FORMAT_EXIT_CODE
+fi
+
+echo "✨ Files formatted by Ultracite"

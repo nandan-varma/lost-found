@@ -7,14 +7,14 @@ import { ItemActions } from "./item-actions";
 import { StatusBadge } from "./status-badge";
 
 interface ItemDetailProps {
+  isLoggedIn: boolean;
+  isOwnerOrAdmin: boolean;
   item: Item & {
     images: ItemImage[];
     user: Pick<User, "name" | "email">;
     claim: Claim | null;
   };
   organizationSlug: string;
-  isOwnerOrAdmin: boolean;
-  isLoggedIn: boolean;
 }
 
 export function ItemDetail({

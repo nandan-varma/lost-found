@@ -7,9 +7,9 @@ import type { Item, ItemImage } from "@/db/schema";
 import { ItemCard } from "./item-card";
 
 interface ItemListProps {
+  activeStatus?: string;
   items: (Item & { images: ItemImage[]; user: { name: string } })[];
   organizationSlug: string;
-  activeStatus?: string;
 }
 
 export function ItemList({

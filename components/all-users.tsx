@@ -9,8 +9,8 @@ import type { User } from "@/db/schema";
 import { authClient } from "@/lib/auth-client";
 
 interface AllUsersProps {
-  users: User[];
   organizationId: string;
+  users: User[];
 }
 
 export default function AllUsers({ users, organizationId }: AllUsersProps) {

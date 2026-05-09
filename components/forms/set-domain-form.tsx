@@ -17,8 +17,8 @@ import { Label } from "@/components/ui/label";
 import { updateOrganizationDomain } from "@/server/organizations";
 
 interface SetDomainFormProps {
-  orgId: string;
   currentDomain: string | null;
+  orgId: string;
 }
 
 export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {

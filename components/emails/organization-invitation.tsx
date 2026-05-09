@@ -14,10 +14,10 @@ import {
 
 interface OrganizationInvitationEmailProps {
   email: string;
-  invitedByUsername: string;
   invitedByEmail: string;
-  teamName: string;
+  invitedByUsername: string;
   inviteLink: string;
+  teamName: string;
 }
 
 const OrganizationInvitationEmail = (

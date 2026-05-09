@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface ImageGalleryProps {
-  images: { id: string; url: string }[];
   alt: string;
+  images: { id: string; url: string }[];
 }
 
 export function ImageGallery({ images, alt }: ImageGalleryProps) {

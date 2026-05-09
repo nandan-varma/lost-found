@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { updateItemStatus } from "@/server/items";
 
 interface ItemActionsProps {
-  itemId: string;
   currentStatus: string;
+  itemId: string;
 }
 
 export function ItemActions({ itemId, currentStatus }: ItemActionsProps) {

@@ -1,15 +1,6 @@
-import { Building2, Plus } from "lucide-react";
+import { Building2 } from "lucide-react";
 import Link from "next/link";
-import { CreateOrganizationForm } from "@/components/forms/create-organization-form";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { CreateOrganizationDialog } from "@/components/forms/create-organization-dialog";
 import { getOrganizations } from "@/server/organizations";
 
 export default async function Dashboard() {
@@ -50,45 +41,13 @@ export default async function Dashboard() {
           <p className="mb-4 text-muted-foreground text-sm">
             Create an organization to get started.
           </p>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-1 size-4" />
-                Create Organization
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Organization</DialogTitle>
-                <DialogDescription>
-                  Create a new organization to get started.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateOrganizationForm />
-            </DialogContent>
-          </Dialog>
+          <CreateOrganizationDialog />
         </div>
       )}
 
       {organizations.length > 0 && (
         <div className="mt-8">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Plus className="mr-1 size-4" />
-                Create Organization
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Organization</DialogTitle>
-                <DialogDescription>
-                  Create a new organization to get started.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateOrganizationForm />
-            </DialogContent>
-          </Dialog>
+          <CreateOrganizationDialog variant="outline" />
         </div>
       )}
     </div>
