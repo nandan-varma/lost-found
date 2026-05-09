@@ -31,6 +31,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
             alt={`${alt} - image ${selectedIndex + 1}`}
             className="object-cover"
             fill
+            loading="eager"
             priority
             sizes="(max-width: 768px) 100vw, 768px"
             src={images[selectedIndex].url}

@@ -13,6 +13,12 @@ import { admin, member, owner } from "./auth/permissions";
 const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 export const auth = betterAuth({
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   socialProviders: {
     microsoft: {
       clientId: process.env.MICROSOFT_CLIENT_ID as string,

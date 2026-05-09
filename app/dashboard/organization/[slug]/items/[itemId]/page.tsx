@@ -6,6 +6,7 @@ import { ItemDetail } from "@/components/items/item-detail";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { getItem } from "@/server/items";
+import { isItemOwnerOrAdmin } from "@/server/permissions";
 
 type Params = Promise<{ slug: string; itemId: string }>;
 
@@ -26,8 +27,7 @@ export default async function ItemDetailPage({ params }: { params: Params }) {
     redirect("/login");
   }
 
-  const isOwnerOrAdmin =
-    item.userId === session.user.id || item.user.email === session.user.email;
+  const isOwnerOrAdmin = await isItemOwnerOrAdmin(itemId);
 
   return (
     <div>

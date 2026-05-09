@@ -6,6 +6,30 @@ import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
+export const isOrgAdmin = async (organizationId: string): Promise<boolean> => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    const membership = await db.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, organizationId),
+        eq(member.userId, session.user.id),
+        inArray(member.role, ["admin", "owner"])
+      ),
+    });
+
+    return !!membership;
+  } catch {
+    return false;
+  }
+};
+
 export const isAdmin = async (): Promise<boolean> => {
   try {
     const { success } = await auth.api.hasPermission({
@@ -18,8 +42,7 @@ export const isAdmin = async (): Promise<boolean> => {
     });
 
     return success;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return false;
   }
 };
@@ -42,8 +65,7 @@ export const isOrgMember = async (organizationId: string): Promise<boolean> => {
     });
 
     return !!membership;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return false;
   }
 };
@@ -79,8 +101,7 @@ export const isItemOwnerOrAdmin = async (itemId: string): Promise<boolean> => {
     });
 
     return !!membership;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return false;
   }
 };

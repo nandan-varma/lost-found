@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { member, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { isOrgAdmin } from "./permissions";
 
 export const getCurrentUser = async () => {
   const session = await auth.api.getSession({
@@ -32,6 +33,12 @@ export const getCurrentUser = async () => {
 
 export const getUsers = async (organizationId: string) => {
   try {
+    const admin = await isOrgAdmin(organizationId);
+
+    if (!admin) {
+      return [];
+    }
+
     const members = await db.query.member.findMany({
       where: eq(member.organizationId, organizationId),
     });
@@ -46,8 +53,7 @@ export const getUsers = async (organizationId: string) => {
     });
 
     return users;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return [];
   }
 };

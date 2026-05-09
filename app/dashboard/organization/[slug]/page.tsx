@@ -1,4 +1,5 @@
 import { ItemList } from "@/components/items/item-list";
+import { itemStatusSchema } from "@/lib/validations";
 import { getItems } from "@/server/items";
 import { getOrganizationBySlug } from "@/server/organizations";
 
@@ -24,12 +25,18 @@ export default async function OrganizationItemsPage({
     );
   }
 
+  const parsedStatus = itemStatusSchema.safeParse(status);
+
   const items = await getItems(
     organization.id,
-    status as "lost" | "found" | undefined
+    parsedStatus.success ? parsedStatus.data : undefined
   );
 
   return (
-    <ItemList activeStatus={status} items={items} organizationSlug={slug} />
+    <ItemList
+      activeStatus={parsedStatus.success ? parsedStatus.data : undefined}
+      items={items}
+      organizationSlug={slug}
+    />
   );
 }

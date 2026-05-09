@@ -135,8 +135,7 @@ export async function createItem(formData: FormData) {
       success: true as const,
       data: newItem,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false as const,
       error: "Failed to create item. Please try again.",
@@ -185,8 +184,7 @@ export async function updateItemStatus(itemId: string, newStatus: ItemStatus) {
       success: true as const,
       error: null,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false as const,
       error: "Failed to update item.",
@@ -266,8 +264,7 @@ export async function claimItem(
       success: true as const,
       error: null,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false as const,
       error: "Failed to claim item.",
@@ -318,8 +315,7 @@ export async function deleteItem(itemId: string) {
       success: true as const,
       error: null,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false as const,
       error: "Failed to delete item.",

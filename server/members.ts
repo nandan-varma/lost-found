@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { member, type Role } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { isAdmin } from "./permissions";
+import { isOrgAdmin } from "./permissions";
 
 export const addMember = async (
   organizationId: string,
@@ -19,31 +19,40 @@ export const addMember = async (
         role,
       },
     });
-  } catch (error) {
-    console.error(error);
+  } catch {
     throw new Error("Failed to add member.");
   }
 };
 
 export const removeMember = async (memberId: string) => {
-  const admin = await isAdmin();
-
-  if (!admin) {
-    return {
-      success: false,
-      error: "You are not authorized to remove members.",
-    };
-  }
-
   try {
+    const memberRecord = await db.query.member.findFirst({
+      where: eq(member.id, memberId),
+    });
+
+    if (!memberRecord) {
+      return {
+        success: false,
+        error: "Member not found.",
+      };
+    }
+
+    const admin = await isOrgAdmin(memberRecord.organizationId);
+
+    if (!admin) {
+      return {
+        success: false,
+        error: "You are not authorized to remove members.",
+      };
+    }
+
     await db.delete(member).where(eq(member.id, memberId));
 
     return {
       success: true,
       error: null,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false,
       error: "Failed to remove member.",

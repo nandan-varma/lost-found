@@ -1,11 +1,12 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
 import { member, organization } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { getCurrentUser } from "./users";
 
 export async function getOrganizations() {
@@ -26,27 +27,38 @@ export async function getOrganizations() {
 }
 
 export async function getActiveOrganization(userId: string) {
-  const memberUser = await db.query.member.findFirst({
-    where: eq(member.userId, userId),
-  });
+  try {
+    const memberUser = await db.query.member.findFirst({
+      where: eq(member.userId, userId),
+    });
 
-  if (!memberUser) {
+    if (!memberUser) {
+      return null;
+    }
+
+    const activeOrganization = await db.query.organization.findFirst({
+      where: eq(organization.id, memberUser.organizationId),
+    });
+
+    return activeOrganization;
+  } catch {
     return null;
   }
-
-  const activeOrganization = await db.query.organization.findFirst({
-    where: eq(organization.id, memberUser.organizationId),
-  });
-
-  return activeOrganization;
 }
 
 export async function getAllOrganizations() {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return [];
+    }
+
     const organizations = await db.query.organization.findMany();
     return organizations;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return [];
   }
 }
@@ -79,14 +91,20 @@ export async function joinOrganization(orgId: string) {
     });
 
     return { success: true as const, error: null };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { success: false as const, error: "Failed to join organization" };
   }
 }
 
 export async function createOrganization(name: string, slug: string) {
   try {
+    if (process.env.FEATURE_FLAG_CREATE_ORGANIZATION !== "true") {
+      return {
+        success: false as const,
+        error: "Organization creation is disabled",
+      };
+    }
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -95,10 +113,23 @@ export async function createOrganization(name: string, slug: string) {
       return { success: false as const, error: "Not authenticated" };
     }
 
+    const parsed = createOrganizationSchema.safeParse({ name, slug });
+
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const messages = Object.entries(fieldErrors)
+        .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+        .join("; ");
+      return {
+        success: false as const,
+        error: messages || "Invalid organization data",
+      };
+    }
+
     const domain = session.user.email.split("@")[1];
 
     const org = await auth.api.createOrganization({
-      body: { name, slug },
+      body: { name: parsed.data.name, slug: parsed.data.slug },
       headers: await headers(),
     });
 
@@ -108,8 +139,7 @@ export async function createOrganization(name: string, slug: string) {
       .where(eq(organization.id, org.id));
 
     return { success: true as const, error: null };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { success: false as const, error: "Failed to create organization" };
   }
 }
@@ -121,8 +151,7 @@ export async function findOrgByDomain(domain: string) {
     });
 
     return org;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return null;
   }
 }
@@ -137,7 +166,7 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
       return { success: false as const, error: "Not authenticated" };
     }
 
-    const { success } = await auth.api.hasPermission({
+    const { success: hasPermission } = await auth.api.hasPermission({
       headers: await headers(),
       body: {
         permissions: {
@@ -146,32 +175,44 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
       },
     });
 
-    if (!success) {
+    if (!hasPermission) {
       return {
         success: false as const,
         error: "Only admins can update organization settings",
       };
     }
 
-    const existing = await db.query.organization.findFirst({
-      where: eq(organization.domain, domain),
-    });
+    const parsedDomain = domainSchema.safeParse(domain.trim());
 
-    if (existing && existing.id !== orgId) {
+    if (!parsedDomain.success) {
       return {
         success: false as const,
-        error: "This domain is already in use by another organization",
+        error: "Invalid domain format",
       };
+    }
+
+    const cleanDomain = parsedDomain.data || null;
+
+    if (cleanDomain) {
+      const existing = await db.query.organization.findFirst({
+        where: eq(organization.domain, cleanDomain),
+      });
+
+      if (existing && existing.id !== orgId) {
+        return {
+          success: false as const,
+          error: "This domain is already in use by another organization",
+        };
+      }
     }
 
     await db
       .update(organization)
-      .set({ domain: domain || null })
+      .set({ domain: cleanDomain })
       .where(eq(organization.id, orgId));
 
     return { success: true as const, error: null };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { success: false as const, error: "Failed to update domain" };
   }
 }
@@ -189,9 +230,30 @@ export async function getOrganizationBySlug(slug: string) {
       },
     });
 
+    if (!organizationBySlug) {
+      return null;
+    }
+
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    const isAdmin =
+      session &&
+      (await db.query.member.findFirst({
+        where: and(
+          eq(member.organizationId, organizationBySlug.id),
+          eq(member.userId, session.user.id),
+          inArray(member.role, ["admin", "owner"])
+        ),
+      }));
+
+    if (!isAdmin) {
+      return { ...organizationBySlug, members: [] };
+    }
+
     return organizationBySlug;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return null;
   }
 }

@@ -112,26 +112,36 @@ export const itemStatus = pgEnum("item_status", [
 
 export type ItemStatus = (typeof itemStatus.enumValues)[number];
 
-export const item = pgTable("item", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => /* @__PURE__ */ randomUUID()),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  status: itemStatus("status").default("lost").notNull(),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
+export const item = pgTable(
+  "item",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => /* @__PURE__ */ randomUUID()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    status: itemStatus("status").default("lost").notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("item_organizationId_status_idx").on(
+      table.organizationId,
+      table.status
+    ),
+    index("item_createdAt_idx").on(table.createdAt),
+  ]
+);
 
 export const itemRelations = relations(item, ({ one, many }) => ({
   organization: one(organization, {
