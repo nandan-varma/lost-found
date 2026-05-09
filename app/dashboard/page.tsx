@@ -1,10 +1,12 @@
 import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { CreateOrganizationDialog } from "@/components/forms/create-organization-dialog";
-import { getOrganizations } from "@/server/organizations";
+import { JoinOrganizationDialog } from "@/components/forms/join-organization-dialog";
+import { getAllOrganizations, getOrganizations } from "@/server/organizations";
 
 export default async function Dashboard() {
   const organizations = await getOrganizations();
+  const allOrganizations = await getAllOrganizations();
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-20">
@@ -39,9 +41,12 @@ export default async function Dashboard() {
           <Building2 className="mx-auto mb-4 size-8 text-muted-foreground" />
           <p className="mb-1 font-medium">No organizations yet</p>
           <p className="mb-4 text-muted-foreground text-sm">
-            Create an organization to get started.
+            Create or join an organization to get started.
           </p>
-          <CreateOrganizationDialog />
+          <div className="flex items-center justify-center gap-3">
+            <CreateOrganizationDialog />
+            <JoinOrganizationDialog organizations={allOrganizations} />
+          </div>
         </div>
       )}
 

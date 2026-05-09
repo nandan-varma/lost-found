@@ -127,6 +127,34 @@ export function LoginForm({
                       "Login"
                     )}
                   </Button>
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                    <div className="flex-1 border-t" />
+                    or continue with
+                    <div className="flex-1 border-t" />
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={() =>
+                      authClient.signIn.social({
+                        provider: "microsoft",
+                        callbackURL: "/dashboard",
+                      })
+                    }
+                    variant="outline"
+                  >
+                    <svg
+                      aria-label="Microsoft logo"
+                      className="mr-2 size-4"
+                      role="img"
+                      viewBox="0 0 23 23"
+                    >
+                      <path d="M0 0h10.909v10.909H0z" fill="#f25022" />
+                      <path d="M12.091 0H23v10.909H12.091z" fill="#7fba00" />
+                      <path d="M0 12.091h10.909V23H0z" fill="#00a4ef" />
+                      <path d="M12.091 12.091H23V23H12.091z" fill="#ffb900" />
+                    </svg>
+                    Microsoft
+                  </Button>
                 </div>
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}

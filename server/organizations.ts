@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
@@ -38,6 +39,50 @@ export async function getActiveOrganization(userId: string) {
   });
 
   return activeOrganization;
+}
+
+export async function getAllOrganizations() {
+  try {
+    const organizations = await db.query.organization.findMany();
+    return organizations;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function joinOrganization(orgId: string) {
+  try {
+    const { currentUser } = await getCurrentUser();
+
+    const existing = await db.query.member.findFirst({
+      where: (fields, { eq, and }) =>
+        and(
+          eq(fields.userId, currentUser.id),
+          eq(fields.organizationId, orgId)
+        ),
+    });
+
+    if (existing) {
+      return {
+        success: false as const,
+        error: "You are already a member of this organization",
+      };
+    }
+
+    await db.insert(member).values({
+      id: randomUUID(),
+      organizationId: orgId,
+      userId: currentUser.id,
+      role: "member",
+      createdAt: new Date(),
+    });
+
+    return { success: true as const, error: null };
+  } catch (error) {
+    console.error(error);
+    return { success: false as const, error: "Failed to join organization" };
+  }
 }
 
 export async function findOrgByDomain(domain: string) {
