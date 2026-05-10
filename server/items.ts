@@ -1,11 +1,10 @@
 "use server";
 
 import { and, desc, eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { claim, type ItemStatus, item, itemImage } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { deleteFile, uploadFile } from "@/lib/r2";
 import { claimItemSchema, createItemSchema } from "@/lib/validations";
 import { isItemOwnerOrAdmin, isOrgMember } from "./permissions";
@@ -90,9 +89,7 @@ export async function createItem(formData: FormData) {
     };
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
@@ -148,9 +145,7 @@ export async function createItem(formData: FormData) {
 }
 
 export async function updateItemStatus(itemId: string, newStatus: ItemStatus) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
@@ -209,9 +204,7 @@ export async function claimItem(
     };
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
@@ -277,9 +270,7 @@ export async function claimItem(
 }
 
 export async function deleteItem(itemId: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");

@@ -3,9 +3,11 @@
 import { randomUUID } from "node:crypto";
 import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
+import { cache } from "react";
 import { db } from "@/db/drizzle";
 import { member, organization } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
@@ -55,9 +57,7 @@ export async function getActiveOrganization(userId: string) {
 export async function getAllOrganizations(userId?: string) {
   try {
     if (!userId) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+      const session = await getSession();
 
       if (!session) {
         return [];
@@ -113,9 +113,7 @@ export async function createOrganization(name: string, slug: string) {
       };
     }
 
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       return { success: false as const, error: "Not authenticated" };
@@ -210,49 +208,49 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
   }
 }
 
-export async function getOrganizationBySlug(slug: string, userId?: string) {
-  try {
-    const organizationBySlug = await db.query.organization.findFirst({
-      where: eq(organization.slug, slug),
-      with: {
-        members: {
-          with: {
-            user: true,
+export const getOrganizationBySlug = cache(
+  async (slug: string, userId?: string) => {
+    try {
+      const organizationBySlug = await db.query.organization.findFirst({
+        where: eq(organization.slug, slug),
+        with: {
+          members: {
+            with: {
+              user: true,
+            },
           },
         },
-      },
-    });
-
-    if (!organizationBySlug) {
-      return null;
-    }
-
-    let resolvedUserId = userId;
-
-    if (!resolvedUserId) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
       });
 
-      if (!session) {
-        return { ...organizationBySlug, members: [] };
+      if (!organizationBySlug) {
+        return null;
       }
 
-      resolvedUserId = session.user.id;
+      let resolvedUserId = userId;
+
+      if (!resolvedUserId) {
+        const session = await getSession();
+
+        if (!session) {
+          return { ...organizationBySlug, members: [], isAdmin: false };
+        }
+
+        resolvedUserId = session.user.id;
+      }
+
+      const isAdmin = organizationBySlug.members.some(
+        (m) =>
+          m.userId === resolvedUserId &&
+          ["admin", "owner" as const].includes(m.role)
+      );
+
+      if (!isAdmin) {
+        return { ...organizationBySlug, members: [], isAdmin: false };
+      }
+
+      return { ...organizationBySlug, isAdmin: true };
+    } catch {
+      return null;
     }
-
-    const isAdmin = organizationBySlug.members.some(
-      (m) =>
-        m.userId === resolvedUserId &&
-        ["admin", "owner" as const].includes(m.role)
-    );
-
-    if (!isAdmin) {
-      return { ...organizationBySlug, members: [] };
-    }
-
-    return organizationBySlug;
-  } catch {
-    return null;
   }
-}
+);

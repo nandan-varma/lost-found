@@ -7,9 +7,14 @@ import { StatusBadge } from "./status-badge";
 interface ItemCardProps {
   item: Item & { images: ItemImage[]; user: { name: string } };
   organizationSlug: string;
+  priority?: boolean;
 }
 
-export function ItemCard({ item: i, organizationSlug }: ItemCardProps) {
+export function ItemCard({
+  item: i,
+  organizationSlug,
+  priority,
+}: ItemCardProps) {
   const firstImage = i.images[0];
 
   return (
@@ -21,7 +26,7 @@ export function ItemCard({ item: i, organizationSlug }: ItemCardProps) {
               alt={i.title}
               className="object-cover"
               fill
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               src={firstImage.url}
             />

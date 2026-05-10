@@ -1,10 +1,9 @@
 "use server";
 
 import { and, eq, inArray } from "drizzle-orm";
-import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 
 export const isOrgAdmin = async (
   organizationId: string,
@@ -14,9 +13,7 @@ export const isOrgAdmin = async (
     let resolvedUserId = userId;
 
     if (!resolvedUserId) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+      const session = await getSession();
 
       if (!session) {
         return false;
@@ -47,9 +44,7 @@ export const isOrgMember = async (
     let resolvedUserId = userId;
 
     if (!resolvedUserId) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+      const session = await getSession();
 
       if (!session) {
         return false;
@@ -80,9 +75,7 @@ export const isItemOwnerOrAdmin = async (
     let resolvedUserId = userId;
 
     if (!resolvedUserId) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+      const session = await getSession();
 
       if (!session) {
         return false;

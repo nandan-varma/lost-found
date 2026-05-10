@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins";
 import { Resend } from "resend";

@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import AllUsers from "@/components/all-users";
@@ -8,7 +7,7 @@ import MembersTable from "@/components/members-table";
 import { MembersTableSkeleton } from "@/components/skeletons";
 import { db } from "@/db/drizzle";
 import { member } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { getOrganizationMembers } from "@/server/members";
 import { getOrganizationBySlug } from "@/server/organizations";
 import { getUsers } from "@/server/users";
@@ -53,9 +52,7 @@ async function MembersContent({
 export default async function MembersPage({ params }: { params: Params }) {
   const { slug } = await params;
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");

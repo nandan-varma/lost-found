@@ -1,10 +1,9 @@
 import { Building2 } from "lucide-react";
 import dynamicImport from "next/dynamic";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { getAllOrganizations, getOrganizations } from "@/server/organizations";
 
 export const dynamic = "force-dynamic";
@@ -44,9 +43,7 @@ export default async function Dashboard({
 }) {
   const { create } = await searchParams;
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");

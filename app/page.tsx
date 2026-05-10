@@ -1,10 +1,9 @@
 import { ArrowRight, Eye, MapPin, Search, Shield, Users } from "lucide-react";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModeSwitcher } from "@/components/mode-switcher";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 
 const features = [
   {
@@ -39,9 +38,7 @@ const features = [
 ];
 
 export default async function Home() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (session) {
     redirect("/dashboard");

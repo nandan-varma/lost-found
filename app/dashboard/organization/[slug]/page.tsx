@@ -1,8 +1,7 @@
-import { headers } from "next/headers";
 import { Suspense } from "react";
 import { ItemList } from "@/components/items/item-list";
 import { ItemListSkeleton } from "@/components/skeletons";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { itemStatusSchema } from "@/lib/validations";
 import { getItems } from "@/server/items";
 import { getOrganizationBySlug } from "@/server/organizations";
@@ -18,9 +17,7 @@ async function ItemsContent({
   slug: string;
   status?: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   const organization = await getOrganizationBySlug(slug, session?.user.id);
 

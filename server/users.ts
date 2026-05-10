@@ -1,33 +1,25 @@
 "use server";
 
 import { eq, inArray, not } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { member, user } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { isOrgAdmin } from "./permissions";
 
 export const getCurrentUser = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
   }
 
-  const currentUser = await db.query.user.findFirst({
-    where: eq(user.id, session.user.id),
-  });
-
-  if (!currentUser) {
-    redirect("/login");
-  }
-
   return {
     ...session,
-    currentUser,
+    currentUser: {
+      ...session.user,
+      image: session.user.image ?? null,
+    },
   };
 };
 

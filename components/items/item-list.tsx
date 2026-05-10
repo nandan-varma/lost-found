@@ -64,8 +64,13 @@ export function ItemList({
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {items.map((i) => (
-            <ItemCard item={i} key={i.id} organizationSlug={organizationSlug} />
+          {items.map((i, index) => (
+            <ItemCard
+              item={i}
+              key={i.id}
+              organizationSlug={organizationSlug}
+              priority={index === 0}
+            />
           ))}
         </div>
       )}

@@ -1,13 +1,12 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ItemDetail } from "@/components/items/item-detail";
 import { ItemDetailSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 import { getQueryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 import { getItem } from "@/server/items";
@@ -24,9 +23,7 @@ async function ItemDetailContent({
   slug: string;
   itemId: string;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
