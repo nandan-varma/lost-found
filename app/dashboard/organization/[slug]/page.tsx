@@ -35,7 +35,8 @@ async function ItemsContent({
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <ItemList
         activeStatus={parsedStatus.success ? parsedStatus.data : undefined}
-        items={items}
+        initialItems={items}
+        organizationId={organization.id}
         organizationSlug={slug}
       />
     </div>

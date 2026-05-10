@@ -1,8 +1,8 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { User } from "@/db/schema";
@@ -14,12 +14,11 @@ interface AllUsersProps {
 }
 
 export default function AllUsers({ users, organizationId }: AllUsersProps) {
-  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleInviteMember = async (user: User) => {
-    try {
-      setLoadingUserId(user.id);
+  const mutation = useMutation({
+    mutationFn: async (user: User) => {
       const { error } = await authClient.organization.inviteMember({
         email: user.email,
         role: "member",
@@ -27,19 +26,23 @@ export default function AllUsers({ users, organizationId }: AllUsersProps) {
       });
 
       if (error) {
-        toast.error(error.message);
-        return;
+        throw new Error(error.message);
       }
 
+      return user;
+    },
+    onSuccess: (user) => {
       toast.success(`Invitation sent to ${user.name}`);
+      queryClient.invalidateQueries({ queryKey: ["members", organizationId] });
+      queryClient.invalidateQueries({
+        queryKey: ["users", organizationId, "non-members"],
+      });
       router.refresh();
-    } catch (error) {
-      toast.error("Failed to invite member to organization");
-      console.error(error);
-    } finally {
-      setLoadingUserId(null);
-    }
-  };
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to invite member to organization");
+    },
+  });
 
   if (users.length === 0) {
     return (
@@ -63,12 +66,12 @@ export default function AllUsers({ users, organizationId }: AllUsersProps) {
             </p>
           </div>
           <Button
-            disabled={loadingUserId === user.id}
-            onClick={() => handleInviteMember(user)}
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate(user)}
             size="sm"
             variant="outline"
           >
-            {loadingUserId === user.id ? (
+            {mutation.isPending ? (
               <Loader2 className="size-3 animate-spin" />
             ) : (
               <>

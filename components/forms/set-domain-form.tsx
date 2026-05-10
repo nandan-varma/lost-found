@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,10 +24,27 @@ interface SetDomainFormProps {
 
 export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
   const [domain, setDomain] = useState(currentDomain ?? "");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  async function handleSubmit(e: React.FormEvent) {
+  const mutation = useMutation({
+    mutationFn: (newDomain: string) =>
+      updateOrganizationDomain(orgId, newDomain),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Domain updated");
+        queryClient.invalidateQueries({ queryKey: ["organization", orgId] });
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    },
+    onError: () => {
+      toast.error("Failed to update domain");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!domain.trim()) {
@@ -34,34 +52,14 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
       return;
     }
 
-    setIsLoading(true);
-
-    const result = await updateOrganizationDomain(orgId, domain.trim());
-
-    if (result.success) {
-      toast.success("Domain updated");
-      router.refresh();
-    } else {
-      toast.error(result.error);
-    }
-
-    setIsLoading(false);
+    mutation.mutate(domain.trim());
   }
 
-  async function handleRemove() {
-    setIsLoading(true);
-
-    const result = await updateOrganizationDomain(orgId, "");
-
-    if (result.success) {
-      toast.success("Domain removed");
+  function handleRemove() {
+    mutation.mutate("");
+    if (!mutation.isPending) {
       setDomain("");
-      router.refresh();
-    } else {
-      toast.error(result.error);
     }
-
-    setIsLoading(false);
   }
 
   return (
@@ -84,12 +82,16 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
               value={domain}
             />
           </div>
-          <Button disabled={isLoading} type="submit">
-            {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Save"}
+          <Button disabled={mutation.isPending} type="submit">
+            {mutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Save"
+            )}
           </Button>
           {currentDomain && (
             <Button
-              disabled={isLoading}
+              disabled={mutation.isPending}
               onClick={handleRemove}
               type="button"
               variant="outline"

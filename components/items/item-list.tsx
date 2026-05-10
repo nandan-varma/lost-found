@@ -1,24 +1,36 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Item, ItemImage } from "@/db/schema";
+import { queryKeys } from "@/lib/query-keys";
+import { getItems } from "@/server/items";
 import { ItemCard } from "./item-card";
 
 interface ItemListProps {
   activeStatus?: string;
-  items: (Item & { images: ItemImage[]; user: { name: string } })[];
+  initialItems: (Item & { images: ItemImage[]; user: { name: string } })[];
+  organizationId: string;
   organizationSlug: string;
 }
 
 export function ItemList({
-  items,
+  initialItems,
+  organizationId,
   organizationSlug,
   activeStatus,
 }: ItemListProps) {
   const router = useRouter();
   const baseHref = `/dashboard/organization/${organizationSlug}`;
+
+  const { data: items } = useQuery({
+    queryKey: queryKeys.items.filtered(organizationId, activeStatus),
+    queryFn: () =>
+      getItems(organizationId, activeStatus as "lost" | "found" | undefined),
+    initialData: initialItems,
+  });
 
   return (
     <div className="space-y-6">

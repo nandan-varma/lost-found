@@ -1,27 +1,41 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Claim, Item, ItemImage, User } from "@/db/schema";
+import { queryKeys } from "@/lib/query-keys";
+import { getItem } from "@/server/items";
 import { ClaimForm } from "./claim-form";
 import { ImageGallery } from "./image-gallery";
 import { ItemActions } from "./item-actions";
 import { StatusBadge } from "./status-badge";
 
 interface ItemDetailProps {
-  isLoggedIn: boolean;
   isOwnerOrAdmin: boolean;
-  item: Item & {
-    images: ItemImage[];
-    user: Pick<User, "name" | "email">;
-    claim: Claim | null;
-  };
+  itemId: string;
+  organizationId: string;
   organizationSlug: string;
 }
 
 export function ItemDetail({
-  item: i,
+  itemId,
+  organizationId,
   organizationSlug,
   isOwnerOrAdmin,
 }: ItemDetailProps) {
+  const { data: i } = useQuery({
+    queryKey: queryKeys.items.detail(itemId),
+    queryFn: () => getItem(itemId),
+  });
+
+  if (!i) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-12 text-center text-muted-foreground">
+        Item not found
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -95,7 +109,11 @@ export function ItemDetail({
       )}
 
       {isOwnerOrAdmin && i.status !== "closed" && (
-        <ItemActions currentStatus={i.status} itemId={i.id} />
+        <ItemActions
+          currentStatus={i.status}
+          itemId={i.id}
+          organizationId={organizationId}
+        />
       )}
     </div>
   );

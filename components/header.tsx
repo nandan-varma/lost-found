@@ -19,11 +19,16 @@ import { ModeSwitcher } from "./mode-switcher";
 import { OrganizationSwitcher } from "./organization-switcher";
 
 interface HeaderProps {
+  activeOrganizationId: string | null;
   organizations: Organization[];
   user: UserType;
 }
 
-export function Header({ organizations, user }: HeaderProps) {
+export function Header({
+  activeOrganizationId,
+  organizations,
+  user,
+}: HeaderProps) {
   const router = useRouter();
 
   const initials = user.name
@@ -48,7 +53,10 @@ export function Header({ organizations, user }: HeaderProps) {
           {organizations.length > 0 && (
             <>
               <span className="text-muted-foreground/50">/</span>
-              <OrganizationSwitcher organizations={organizations} />
+              <OrganizationSwitcher
+                activeOrganizationId={activeOrganizationId}
+                organizations={organizations}
+              />
             </>
           )}
         </div>

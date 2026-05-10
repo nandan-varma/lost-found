@@ -57,6 +57,15 @@ No global state management (no Zustand/Redux). Data flow: server component fetch
 
 Template at `env.example`. Required: `DATABASE_URL`, `BETTER_AUTH_SECRET`, R2 config, Microsoft Entra credentials, Resend API key.
 
+## TanStack Query
+
+- Provider: `app/providers.tsx`, initialized in `app/layout.tsx`
+- Query client factory: `lib/query-client.ts` (SSR-safe singleton pattern — fresh per request on server, shared on client)
+- Query keys: `lib/query-keys.ts` — use `queryKeys.items.all(orgId)`, `.filtered(orgId, status?)`, `.detail(itemId)` etc.
+- Mutations use `useMutation` + `queryClient.invalidateQueries()` — **do not use `router.refresh()`** for item mutations (create, claim, status change). Non-items mutations (members, orgs, users) still need `router.refresh()` since they lack client queries.
+- Items list + detail use `useQuery` with `initialData` from server component prefetch. The server component fetches data and passes it as `initialItems` / the query client sets it via `setQueryData` and `HydrationBoundary`.
+- Default `staleTime: 30_000` (30s) — queries refetch in background after this.
+
 ## Image Storage
 
 Cloudflare R2 via `@aws-sdk/client-s3` (`lib/r2.ts`). Uploaded as FormData to server actions. 50MB body limit in `next.config.ts`.

@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { queryKeys } from "@/lib/query-keys";
 import { claimItemSchema } from "@/lib/validations";
 import { claimItem } from "@/server/items";
 
@@ -27,8 +28,8 @@ interface ClaimFormProps {
 }
 
 export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof claimItemSchema>>({
     resolver: zodResolver(claimItemSchema),
@@ -39,22 +40,26 @@ export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof claimItemSchema>) {
-    setIsLoading(true);
+  const mutation = useMutation({
+    mutationFn: (values: z.infer<typeof claimItemSchema>) =>
+      claimItem(itemId, values),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Item claimed successfully");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.items.detail(itemId),
+        });
+        router.push(
+          `/dashboard/organization/${organizationSlug}/items/${itemId}`
+        );
+      } else {
+        toast.error(result.error as string);
+      }
+    },
+  });
 
-    const result = await claimItem(itemId, values);
-
-    if (result.success) {
-      toast.success("Item claimed successfully");
-      router.push(
-        `/dashboard/organization/${organizationSlug}/items/${itemId}`
-      );
-      router.refresh();
-    } else {
-      toast.error(result.error as string);
-    }
-
-    setIsLoading(false);
+  function onSubmit(values: z.infer<typeof claimItemSchema>) {
+    mutation.mutate(values);
   }
 
   return (
@@ -102,8 +107,8 @@ export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
             </FormItem>
           )}
         />
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
+        <Button disabled={mutation.isPending} type="submit">
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             "Submit Claim"

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { queryKeys } from "@/lib/query-keys";
 import { createItem } from "@/server/items";
 
 const formSchema = z.object({
@@ -39,12 +41,12 @@ export function PostItemForm({
   organizationId,
   organizationSlug,
 }: PostItemFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const previewUrlsRef = useRef(imagePreviews);
   previewUrlsRef.current = imagePreviews;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(
     () => () => {
@@ -61,6 +63,23 @@ export function PostItemForm({
       title: "",
       description: "",
       status: "lost",
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (formData: FormData) => createItem(formData),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Item posted successfully");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.items.all(organizationId),
+        });
+        router.push(
+          `/dashboard/organization/${organizationSlug}/items/${result.data.id}`
+        );
+      } else {
+        toast.error(result.error as string);
+      }
     },
   });
 
@@ -102,9 +121,7 @@ export function PostItemForm({
     });
   }, []);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-
+  function onSubmit(values: z.infer<typeof formSchema>) {
     const formData = new FormData();
     formData.append("title", values.title);
     formData.append("description", values.description);
@@ -115,18 +132,7 @@ export function PostItemForm({
       formData.append("images", file);
     }
 
-    const result = await createItem(formData);
-
-    if (result.success) {
-      toast.success("Item posted successfully");
-      router.push(
-        `/dashboard/organization/${organizationSlug}/items/${result.data.id}`
-      );
-    } else {
-      toast.error(result.error as string);
-    }
-
-    setIsLoading(false);
+    mutation.mutate(formData);
   }
 
   return (
@@ -248,8 +254,8 @@ export function PostItemForm({
           <FormMessage />
         </FormItem>
 
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
+        <Button disabled={mutation.isPending} type="submit">
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             "Post Item"

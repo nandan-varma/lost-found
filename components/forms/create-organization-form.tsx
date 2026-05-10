@@ -1,8 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { queryKeys } from "@/lib/query-keys";
 import { createOrganization } from "@/server/organizations";
 
 const formSchema = z.object({
@@ -30,7 +31,7 @@ interface CreateOrganizationFormProps {
 export function CreateOrganizationForm({
   onSuccess,
 }: CreateOrganizationFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,23 +41,27 @@ export function CreateOrganizationForm({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsLoading(true);
-      const result = await createOrganization(values.name, values.slug);
-
+  const mutation = useMutation({
+    mutationFn: (values: z.infer<typeof formSchema>) =>
+      createOrganization(values.name, values.slug),
+    onSuccess: (result) => {
       if (result.success) {
         toast.success("Organization created successfully");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.organizations.all(),
+        });
         onSuccess?.();
       } else {
         toast.error(result.error);
       }
-    } catch (error) {
-      console.error(error);
+    },
+    onError: () => {
       toast.error("Failed to create organization");
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    mutation.mutate(values);
   }
 
   return (
@@ -90,8 +95,8 @@ export function CreateOrganizationForm({
           )}
         />
 
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
+        <Button disabled={mutation.isPending} type="submit">
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             "Create Organization"

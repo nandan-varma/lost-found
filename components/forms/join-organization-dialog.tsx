@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { queryKeys } from "@/lib/query-keys";
 import { joinOrganization } from "@/server/organizations";
 import { CreateOrganizationForm } from "./create-organization-form";
 
@@ -38,28 +40,36 @@ export function JoinOrganizationDialog({
   organizations,
 }: JoinOrganizationDialogProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string>();
   const [showCreate, setShowCreate] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
 
-  async function handleJoin() {
+  const mutation = useMutation({
+    mutationFn: (orgId: string) => joinOrganization(orgId),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Joined organization successfully");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.organizations.all(),
+        });
+        setOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    },
+    onError: () => {
+      toast.error("Failed to join organization");
+    },
+  });
+
+  function handleJoin() {
     if (!selectedOrgId) {
       return;
     }
 
-    setIsJoining(true);
-    const result = await joinOrganization(selectedOrgId);
-
-    if (result.success) {
-      toast.success("Joined organization successfully");
-      setOpen(false);
-      router.refresh();
-    } else {
-      toast.error(result.error);
-    }
-
-    setIsJoining(false);
+    mutation.mutate(selectedOrgId);
   }
 
   function handleValueChange(value: string) {
@@ -146,10 +156,10 @@ export function JoinOrganizationDialog({
               </Select>
               <Button
                 className="w-full"
-                disabled={!selectedOrgId || isJoining}
+                disabled={!selectedOrgId || mutation.isPending}
                 onClick={handleJoin}
               >
-                {isJoining ? "Joining..." : "Join"}
+                {mutation.isPending ? "Joining..." : "Join"}
               </Button>
             </div>
           </>

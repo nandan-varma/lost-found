@@ -2,7 +2,6 @@
 
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -17,14 +16,15 @@ import { authClient } from "@/lib/auth-client";
 const CREATE_ORG_VALUE = "__create__";
 
 interface OrganizationSwitcherProps {
+  activeOrganizationId: string | null;
   organizations: Organization[];
 }
 
 export function OrganizationSwitcher({
+  activeOrganizationId,
   organizations,
 }: OrganizationSwitcherProps) {
   const router = useRouter();
-  const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const handleChangeOrganization = async (organizationId: string) => {
     if (organizationId === CREATE_ORG_VALUE) {
@@ -32,28 +32,22 @@ export function OrganizationSwitcher({
       return;
     }
 
-    try {
-      const { error } = await authClient.organization.setActive({
-        organizationId,
-      });
-
-      if (error) {
-        console.error(error);
-        toast.error("Failed to switch organization");
-        return;
-      }
-
-      toast.success("Organization switched successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to switch organization");
+    const org = organizations.find((o) => o.id === organizationId);
+    if (!org) {
+      return;
     }
+
+    await authClient.organization.setActive({
+      organizationId,
+    });
+
+    router.push(`/dashboard/organization/${org.slug}`);
   };
 
   return (
     <Select
       onValueChange={handleChangeOrganization}
-      value={activeOrganization?.id ?? ""}
+      value={activeOrganizationId ?? ""}
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select organization" />

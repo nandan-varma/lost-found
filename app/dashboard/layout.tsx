@@ -5,10 +5,18 @@ import { getOrganizations } from "@/server/organizations";
 import { getCurrentUser } from "@/server/users";
 
 async function HeaderContent() {
-  const { currentUser } = await getCurrentUser();
+  const sessionData = await getCurrentUser();
+  const { currentUser } = sessionData;
   const organizations = await getOrganizations();
+  const activeOrganizationId = sessionData.session.activeOrganizationId ?? null;
 
-  return <Header organizations={organizations} user={currentUser} />;
+  return (
+    <Header
+      activeOrganizationId={activeOrganizationId}
+      organizations={organizations}
+      user={currentUser}
+    />
+  );
 }
 
 export default function DashboardLayout({

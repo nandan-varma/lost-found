@@ -1,3 +1,4 @@
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -7,6 +8,8 @@ import { ItemDetail } from "@/components/items/item-detail";
 import { ItemDetailSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
+import { getQueryClient } from "@/lib/query-client";
+import { queryKeys } from "@/lib/query-keys";
 import { getItem } from "@/server/items";
 import { isItemOwnerOrAdmin } from "@/server/permissions";
 
@@ -37,6 +40,9 @@ async function ItemDetailContent({
 
   const isOwnerOrAdmin = await isItemOwnerOrAdmin(itemId);
 
+  const queryClient = getQueryClient();
+  queryClient.setQueryData(queryKeys.items.detail(itemId), item);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <Button
@@ -50,12 +56,14 @@ async function ItemDetailContent({
           Back to items
         </Link>
       </Button>
-      <ItemDetail
-        isLoggedIn={!!session}
-        isOwnerOrAdmin={isOwnerOrAdmin}
-        item={item}
-        organizationSlug={slug}
-      />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ItemDetail
+          isOwnerOrAdmin={isOwnerOrAdmin}
+          itemId={item.id}
+          organizationId={item.organizationId}
+          organizationSlug={slug}
+        />
+      </HydrationBoundary>
     </div>
   );
 }
