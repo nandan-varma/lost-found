@@ -13,11 +13,21 @@ import { getOrganizationMembers } from "@/server/members";
 import { getOrganizationBySlug } from "@/server/organizations";
 import { getUsers } from "@/server/users";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ slug: string }>;
 
-async function MembersContent({ organizationId }: { organizationId: string }) {
-  const users = await getUsers(organizationId);
-  const members = await getOrganizationMembers(organizationId);
+async function MembersContent({
+  organizationId,
+  userId,
+}: {
+  organizationId: string;
+  userId: string;
+}) {
+  const [users, members] = await Promise.all([
+    getUsers(organizationId, userId),
+    getOrganizationMembers(organizationId),
+  ]);
 
   return (
     <>
@@ -51,7 +61,7 @@ export default async function MembersPage({ params }: { params: Params }) {
     redirect("/login");
   }
 
-  const organization = await getOrganizationBySlug(slug);
+  const organization = await getOrganizationBySlug(slug, session.user.id);
 
   if (!organization) {
     redirect("/dashboard");
@@ -88,7 +98,10 @@ export default async function MembersPage({ params }: { params: Params }) {
       )}
 
       <Suspense fallback={<MembersTableSkeleton />}>
-        <MembersContent organizationId={organization.id} />
+        <MembersContent
+          organizationId={organization.id}
+          userId={session.user.id}
+        />
       </Suspense>
     </div>
   );

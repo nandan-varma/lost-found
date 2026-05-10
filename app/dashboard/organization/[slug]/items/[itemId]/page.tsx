@@ -13,6 +13,8 @@ import { queryKeys } from "@/lib/query-keys";
 import { getItem } from "@/server/items";
 import { isItemOwnerOrAdmin } from "@/server/permissions";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ slug: string; itemId: string }>;
 
 async function ItemDetailContent({
@@ -22,23 +24,22 @@ async function ItemDetailContent({
   slug: string;
   itemId: string;
 }) {
-  // Parallel fetch item and session
-  const [item, session] = await Promise.all([
-    getItem(itemId),
-    auth.api.getSession({
-      headers: await headers(),
-    }),
-  ]);
-
-  if (!item) {
-    notFound();
-  }
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   if (!session) {
     redirect("/login");
   }
 
-  const isOwnerOrAdmin = await isItemOwnerOrAdmin(itemId);
+  const [item, isOwnerOrAdmin] = await Promise.all([
+    getItem(itemId, session.user.id),
+    isItemOwnerOrAdmin(itemId, session.user.id),
+  ]);
+
+  if (!item) {
+    notFound();
+  }
 
   const queryClient = getQueryClient();
   queryClient.setQueryData(queryKeys.items.detail(itemId), item);

@@ -6,5 +6,5 @@ config({ path: ".env" }); // or .env.local
 
 export const db = drizzle(process.env.DATABASE_URL as string, {
   schema,
-  logger: true,
+  logger: process.env.NODE_ENV === "development",
 });

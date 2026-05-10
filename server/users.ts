@@ -31,9 +31,9 @@ export const getCurrentUser = async () => {
   };
 };
 
-export const getUsers = async (organizationId: string) => {
+export const getUsers = async (organizationId: string, userId?: string) => {
   try {
-    const admin = await isOrgAdmin(organizationId);
+    const admin = await isOrgAdmin(organizationId, userId);
 
     if (!admin) {
       return [];

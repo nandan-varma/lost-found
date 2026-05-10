@@ -1,9 +1,41 @@
 import { Building2 } from "lucide-react";
+import dynamicImport from "next/dynamic";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CreateOrganizationDialog } from "@/components/forms/create-organization-dialog";
-import { JoinOrganizationDialog } from "@/components/forms/join-organization-dialog";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 import { getAllOrganizations, getOrganizations } from "@/server/organizations";
+
+export const dynamic = "force-dynamic";
+
+const CreateOrganizationDialog = dynamicImport(
+  () =>
+    import("@/components/forms/create-organization-dialog").then(
+      (m) => m.CreateOrganizationDialog
+    ),
+  {
+    loading: () => (
+      <Button disabled variant="default">
+        Create Organization
+      </Button>
+    ),
+  }
+);
+
+const JoinOrganizationDialog = dynamicImport(
+  () =>
+    import("@/components/forms/join-organization-dialog").then(
+      (m) => m.JoinOrganizationDialog
+    ),
+  {
+    loading: () => (
+      <Button disabled variant="outline">
+        Join Organization
+      </Button>
+    ),
+  }
+);
 
 export default async function Dashboard({
   searchParams,
@@ -12,10 +44,17 @@ export default async function Dashboard({
 }) {
   const { create } = await searchParams;
 
-  // Parallel fetch organizations
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
   const [organizations, allOrganizations] = await Promise.all([
-    getOrganizations(),
-    getAllOrganizations(),
+    getOrganizations(session.user.id),
+    getAllOrganizations(session.user.id),
   ]);
 
   if (!create && organizations.length === 1) {

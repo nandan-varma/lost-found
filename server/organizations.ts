@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/db/drizzle";
 import { member, organization } from "@/db/schema";
@@ -10,11 +10,16 @@ import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
 
-export async function getOrganizations() {
-  const { currentUser } = await getCurrentUser();
+export async function getOrganizations(userId?: string) {
+  let resolvedUserId = userId;
+
+  if (!resolvedUserId) {
+    const { currentUser } = await getCurrentUser();
+    resolvedUserId = currentUser.id;
+  }
 
   const members = await db.query.member.findMany({
-    where: eq(member.userId, currentUser.id),
+    where: eq(member.userId, resolvedUserId),
   });
 
   const organizations = await db.query.organization.findMany({
@@ -47,14 +52,16 @@ export async function getActiveOrganization(userId: string) {
   }
 }
 
-export async function getAllOrganizations() {
+export async function getAllOrganizations(userId?: string) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    if (!userId) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
 
-    if (!session) {
-      return [];
+      if (!session) {
+        return [];
+      }
     }
 
     const organizations = await db.query.organization.findMany();
@@ -203,7 +210,7 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
   }
 }
 
-export async function getOrganizationBySlug(slug: string) {
+export async function getOrganizationBySlug(slug: string, userId?: string) {
   try {
     const organizationBySlug = await db.query.organization.findFirst({
       where: eq(organization.slug, slug),
@@ -220,19 +227,25 @@ export async function getOrganizationBySlug(slug: string) {
       return null;
     }
 
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    let resolvedUserId = userId;
 
-    const isAdmin =
-      session &&
-      (await db.query.member.findFirst({
-        where: and(
-          eq(member.organizationId, organizationBySlug.id),
-          eq(member.userId, session.user.id),
-          inArray(member.role, ["admin", "owner"])
-        ),
-      }));
+    if (!resolvedUserId) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return { ...organizationBySlug, members: [] };
+      }
+
+      resolvedUserId = session.user.id;
+    }
+
+    const isAdmin = organizationBySlug.members.some(
+      (m) =>
+        m.userId === resolvedUserId &&
+        ["admin", "owner" as const].includes(m.role)
+    );
 
     if (!isAdmin) {
       return { ...organizationBySlug, members: [] };

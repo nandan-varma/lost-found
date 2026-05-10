@@ -18,13 +18,14 @@ export default async function OrganizationLayout({
 }) {
   const { slug } = await params;
 
-  const org = await db.query.organization.findFirst({
-    where: eq(organization.slug, slug),
-  });
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [org, session] = await Promise.all([
+    db.query.organization.findFirst({
+      where: eq(organization.slug, slug),
+    }),
+    auth.api.getSession({
+      headers: await headers(),
+    }),
+  ]);
 
   const currentMember =
     session && org

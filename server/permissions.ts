@@ -6,20 +6,29 @@ import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-export const isOrgAdmin = async (organizationId: string): Promise<boolean> => {
+export const isOrgAdmin = async (
+  organizationId: string,
+  userId?: string
+): Promise<boolean> => {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    let resolvedUserId = userId;
 
-    if (!session) {
-      return false;
+    if (!resolvedUserId) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return false;
+      }
+
+      resolvedUserId = session.user.id;
     }
 
     const membership = await db.query.member.findFirst({
       where: and(
         eq(member.organizationId, organizationId),
-        eq(member.userId, session.user.id),
+        eq(member.userId, resolvedUserId),
         inArray(member.role, ["admin", "owner"])
       ),
     });
@@ -30,20 +39,29 @@ export const isOrgAdmin = async (organizationId: string): Promise<boolean> => {
   }
 };
 
-export const isOrgMember = async (organizationId: string): Promise<boolean> => {
+export const isOrgMember = async (
+  organizationId: string,
+  userId?: string
+): Promise<boolean> => {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    let resolvedUserId = userId;
 
-    if (!session) {
-      return false;
+    if (!resolvedUserId) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return false;
+      }
+
+      resolvedUserId = session.user.id;
     }
 
     const membership = await db.query.member.findFirst({
       where: and(
         eq(member.organizationId, organizationId),
-        eq(member.userId, session.user.id)
+        eq(member.userId, resolvedUserId)
       ),
     });
 
@@ -53,32 +71,46 @@ export const isOrgMember = async (organizationId: string): Promise<boolean> => {
   }
 };
 
-export const isItemOwnerOrAdmin = async (itemId: string): Promise<boolean> => {
+export const isItemOwnerOrAdmin = async (
+  itemId: string,
+  userId?: string,
+  itemRecord?: typeof item.$inferSelect
+): Promise<boolean> => {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    let resolvedUserId = userId;
 
-    if (!session) {
+    if (!resolvedUserId) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return false;
+      }
+
+      resolvedUserId = session.user.id;
+    }
+
+    let resolvedItemRecord = itemRecord;
+
+    if (!resolvedItemRecord) {
+      resolvedItemRecord = await db.query.item.findFirst({
+        where: eq(item.id, itemId),
+      });
+    }
+
+    if (!resolvedItemRecord) {
       return false;
     }
 
-    const itemRecord = await db.query.item.findFirst({
-      where: eq(item.id, itemId),
-    });
-
-    if (!itemRecord) {
-      return false;
-    }
-
-    if (itemRecord.userId === session.user.id) {
+    if (resolvedItemRecord.userId === resolvedUserId) {
       return true;
     }
 
     const membership = await db.query.member.findFirst({
       where: and(
-        eq(member.organizationId, itemRecord.organizationId),
-        eq(member.userId, session.user.id),
+        eq(member.organizationId, resolvedItemRecord.organizationId),
+        eq(member.userId, resolvedUserId),
         inArray(member.role, ["admin", "owner"])
       ),
     });

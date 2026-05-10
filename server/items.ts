@@ -10,8 +10,12 @@ import { deleteFile, uploadFile } from "@/lib/r2";
 import { claimItemSchema, createItemSchema } from "@/lib/validations";
 import { isItemOwnerOrAdmin, isOrgMember } from "./permissions";
 
-export async function getItems(organizationId: string, status?: ItemStatus) {
-  const member = await isOrgMember(organizationId);
+export async function getItems(
+  organizationId: string,
+  status?: ItemStatus,
+  userId?: string
+) {
+  const member = await isOrgMember(organizationId, userId);
 
   if (!member) {
     return [];
@@ -35,7 +39,7 @@ export async function getItems(organizationId: string, status?: ItemStatus) {
   return items;
 }
 
-export async function getItem(itemId: string) {
+export async function getItem(itemId: string, userId?: string) {
   const itemRecord = await db.query.item.findFirst({
     where: eq(item.id, itemId),
     with: {
@@ -49,7 +53,7 @@ export async function getItem(itemId: string) {
     return null;
   }
 
-  const member = await isOrgMember(itemRecord.organizationId);
+  const member = await isOrgMember(itemRecord.organizationId, userId);
 
   if (!member) {
     return null;
@@ -86,17 +90,17 @@ export async function createItem(formData: FormData) {
     };
   }
 
-  const member = await isOrgMember(organizationId);
-
-  if (!member) {
-    redirect("/login");
-  }
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) {
+    redirect("/login");
+  }
+
+  const member = await isOrgMember(organizationId, session.user.id);
+
+  if (!member) {
     redirect("/login");
   }
 
@@ -164,7 +168,7 @@ export async function updateItemStatus(itemId: string, newStatus: ItemStatus) {
   }
 
   if (itemRecord.userId !== session.user.id) {
-    const admin = await isItemOwnerOrAdmin(itemId);
+    const admin = await isItemOwnerOrAdmin(itemId, session.user.id, itemRecord);
 
     if (!admin) {
       return {
@@ -238,7 +242,7 @@ export async function claimItem(
     };
   }
 
-  const member = await isOrgMember(itemRecord.organizationId);
+  const member = await isOrgMember(itemRecord.organizationId, session.user.id);
 
   if (!member) {
     return {
@@ -296,7 +300,7 @@ export async function deleteItem(itemId: string) {
   }
 
   if (itemRecord.userId !== session.user.id) {
-    const admin = await isItemOwnerOrAdmin(itemId);
+    const admin = await isItemOwnerOrAdmin(itemId, session.user.id, itemRecord);
 
     if (!admin) {
       return {

@@ -139,6 +139,7 @@ export const item = pgTable(
       table.organizationId,
       table.status
     ),
+    index("item_userId_idx").on(table.userId),
     index("item_createdAt_idx").on(table.createdAt),
   ]
 );
@@ -158,19 +159,23 @@ export const itemRelations = relations(item, ({ one, many }) => ({
 
 export type Item = typeof item.$inferSelect;
 
-export const itemImage = pgTable("item_image", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => /* @__PURE__ */ randomUUID()),
-  itemId: text("item_id")
-    .notNull()
-    .references(() => item.id, { onDelete: "cascade" }),
-  url: text("url").notNull(),
-  key: text("key").notNull(),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
+export const itemImage = pgTable(
+  "item_image",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => /* @__PURE__ */ randomUUID()),
+    itemId: text("item_id")
+      .notNull()
+      .references(() => item.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    key: text("key").notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("item_image_itemId_idx").on(table.itemId)]
+);
 
 export const itemImageRelations = relations(itemImage, ({ one }) => ({
   item: one(item, {

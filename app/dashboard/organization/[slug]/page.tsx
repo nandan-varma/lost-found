@@ -1,9 +1,13 @@
+import { headers } from "next/headers";
 import { Suspense } from "react";
 import { ItemList } from "@/components/items/item-list";
 import { ItemListSkeleton } from "@/components/skeletons";
+import { auth } from "@/lib/auth";
 import { itemStatusSchema } from "@/lib/validations";
 import { getItems } from "@/server/items";
 import { getOrganizationBySlug } from "@/server/organizations";
+
+export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
 
@@ -14,7 +18,11 @@ async function ItemsContent({
   slug: string;
   status?: string;
 }) {
-  const organization = await getOrganizationBySlug(slug);
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const organization = await getOrganizationBySlug(slug, session?.user.id);
 
   if (!organization) {
     return (
@@ -28,7 +36,8 @@ async function ItemsContent({
 
   const items = await getItems(
     organization.id,
-    parsedStatus.success ? parsedStatus.data : undefined
+    parsedStatus.success ? parsedStatus.data : undefined,
+    session?.user.id
   );
 
   return (

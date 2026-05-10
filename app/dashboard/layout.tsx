@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/server/users";
 async function HeaderContent() {
   const sessionData = await getCurrentUser();
   const { currentUser } = sessionData;
-  const organizations = await getOrganizations();
+  const organizations = await getOrganizations(currentUser.id);
   const activeOrganizationId = sessionData.session.activeOrganizationId ?? null;
 
   return (
