@@ -104,11 +104,8 @@ const OrganizationInvitationEmail = (
                 expecting this invitation, you can safely ignore this email.
               </Text>
               <Text className="m-0 mb-[8px] text-center text-[12px] text-gray-500">
-                © {new Date().getFullYear()} Your Company Name. All rights
+                © {new Date().getFullYear()} Lost and Found. All rights
                 reserved.
-              </Text>
-              <Text className="m-0 text-center text-[12px] text-gray-500">
-                123 Business Street, Suite 100, City, State 12345
               </Text>
             </Section>
           </Container>

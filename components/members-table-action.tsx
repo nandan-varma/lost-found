@@ -21,7 +21,6 @@ export default function MembersTableAction({ memberId }: { memberId: string }) {
         return;
       }
 
-      setIsLoading(false);
       toast.success("Member removed from organization");
       router.refresh();
     } catch (error) {

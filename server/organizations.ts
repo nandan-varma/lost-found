@@ -7,6 +7,7 @@ import { db } from "@/db/drizzle";
 import { member, organization } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { createOrganizationSchema, domainSchema } from "@/lib/validations";
+import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
 
 export async function getOrganizations() {
@@ -158,24 +159,9 @@ export async function findOrgByDomain(domain: string) {
 
 export async function updateOrganizationDomain(orgId: string, domain: string) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const admin = await isOrgAdmin(orgId);
 
-    if (!session) {
-      return { success: false as const, error: "Not authenticated" };
-    }
-
-    const { success: hasPermission } = await auth.api.hasPermission({
-      headers: await headers(),
-      body: {
-        permissions: {
-          organization: ["update", "delete"],
-        },
-      },
-    });
-
-    if (!hasPermission) {
+    if (!admin) {
       return {
         success: false as const,
         error: "Only admins can update organization settings",

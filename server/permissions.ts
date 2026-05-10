@@ -30,23 +30,6 @@ export const isOrgAdmin = async (organizationId: string): Promise<boolean> => {
   }
 };
 
-export const isAdmin = async (): Promise<boolean> => {
-  try {
-    const { success } = await auth.api.hasPermission({
-      headers: await headers(),
-      body: {
-        permissions: {
-          organization: ["update", "delete"],
-        },
-      },
-    });
-
-    return success;
-  } catch {
-    return false;
-  }
-};
-
 export const isOrgMember = async (organizationId: string): Promise<boolean> => {
   try {
     const session = await auth.api.getSession({
