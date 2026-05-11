@@ -6,14 +6,8 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-
-function getEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
+import { MAX_FILE_SIZE } from "./constants";
+import { getEnv } from "./env";
 
 const R2_REGION = getEnv("R2_REGION");
 const R2_ENDPOINT = getEnv("R2_ENDPOINT");
@@ -40,7 +34,7 @@ export async function uploadFile(
     throw new Error("Only image files are allowed");
   }
 
-  if (file.size > 10 * 1024 * 1024) {
+  if (file.size > MAX_FILE_SIZE) {
     throw new Error("File size must be less than 10 MB");
   }
 

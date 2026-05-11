@@ -33,7 +33,7 @@ export const createOrganizationSchema = z.object({
     ),
 });
 
-export const itemStatusSchema = z.enum(["lost", "found"]);
+export const createItemStatusSchema = z.enum(["lost", "found"]);
 
 export const domainSchema = z
   .string()

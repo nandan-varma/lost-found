@@ -2,27 +2,30 @@
 
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
-import { headers } from "next/headers";
 import { Resend } from "resend";
 import OrganizationInvitationEmail from "@/components/emails/organization-invitation";
 import { db } from "@/db/drizzle";
+import type { Member } from "@/db/schema";
 import { invitation, member, organization, type Role, user } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import type { ActionResult } from "@/lib/action-response";
+import { getEnv } from "@/lib/env";
+import { getSession } from "@/lib/get-session";
 
-const resend = new Resend(process.env.RESEND_API_KEY as string);
+const resend = new Resend(getEnv("RESEND_API_KEY"));
 
 export const inviteMember = async (
   organizationId: string,
   email: string,
   role: Role = "member"
-) => {
+): Promise<ActionResult<string>> => {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session?.user) {
-      throw new Error("You must be logged in to invite members");
+      return {
+        success: false,
+        error: "You must be logged in to invite members",
+      };
     }
 
     const membership = await db.query.member.findFirst({
@@ -34,9 +37,10 @@ export const inviteMember = async (
     });
 
     if (!membership) {
-      throw new Error(
-        "You are not allowed to invite users to this organization"
-      );
+      return {
+        success: false,
+        error: "You are not allowed to invite users to this organization",
+      };
     }
 
     const existingUser = await db.query.user.findFirst({
@@ -52,7 +56,10 @@ export const inviteMember = async (
       });
 
       if (existingMember) {
-        throw new Error("User is already a member of this organization");
+        return {
+          success: false,
+          error: "User is already a member of this organization",
+        };
       }
 
       await db.insert(member).values({
@@ -65,7 +72,7 @@ export const inviteMember = async (
 
       return {
         success: true,
-        message: `${existingUser.name || email} added as member`,
+        data: `${existingUser.name || email} added as member`,
       };
     }
 
@@ -84,7 +91,7 @@ export const inviteMember = async (
       inviterId: session.user.id,
     });
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invId}`;
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${invId}`;
 
     await resend.emails.send({
       from: `${process.env.EMAIL_SENDER_NAME} <${process.env.EMAIL_SENDER_ADDRESS}>`,
@@ -101,21 +108,21 @@ export const inviteMember = async (
 
     return {
       success: true,
-      message: `Invitation sent to ${email}`,
+      data: `Invitation sent to ${email}`,
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to invite member",
+      error: "Failed to invite member",
     };
   }
 };
 
-export const removeMember = async (memberId: string) => {
+export const removeMember = async (
+  memberId: string
+): Promise<ActionResult<null>> => {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session?.user) {
       return {
@@ -154,7 +161,7 @@ export const removeMember = async (memberId: string) => {
 
     return {
       success: true,
-      error: null,
+      data: null,
     };
   } catch {
     return {
@@ -164,7 +171,9 @@ export const removeMember = async (memberId: string) => {
   }
 };
 
-export const getOrganizationMembers = async (organizationId: string) => {
+export const getOrganizationMembers = async (
+  organizationId: string
+): Promise<Member[]> => {
   try {
     const members = await db.query.member.findMany({
       where: eq(member.organizationId, organizationId),

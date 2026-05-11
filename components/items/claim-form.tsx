@@ -51,7 +51,7 @@ export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
         });
         router.push(`/app/${organizationSlug}/items/${itemId}`);
       } else {
-        toast.error(result.error as string);
+        toast.error(result.error);
       }
     },
   });

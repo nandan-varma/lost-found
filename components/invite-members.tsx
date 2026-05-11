@@ -7,6 +7,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { queryKeys } from "@/lib/query-keys";
 import { inviteMember } from "@/server/members";
 import { searchUsers } from "@/server/users";
 
@@ -22,7 +23,7 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
-    queryKey: ["users", "search", organizationId, inputValue],
+    queryKey: queryKeys.users.search(organizationId, inputValue),
     queryFn: () => searchUsers(organizationId, inputValue),
     enabled: inputValue.length >= 2,
     staleTime: 30_000,
@@ -32,15 +33,17 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
     mutationFn: async (email: string) => {
       const result = await inviteMember(organizationId, email);
       if (!result.success) {
-        throw new Error(result.error ?? "Failed to invite");
+        throw new Error(result.error);
       }
-      return result.message ?? email;
+      return result.data;
     },
     onSuccess: (message) => {
-      toast.success(message ?? "Member added");
-      queryClient.invalidateQueries({ queryKey: ["members", organizationId] });
+      toast.success(message);
       queryClient.invalidateQueries({
-        queryKey: ["users", "search", organizationId],
+        queryKey: queryKeys.members.all(organizationId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.searchResults(organizationId),
       });
       router.refresh();
     },

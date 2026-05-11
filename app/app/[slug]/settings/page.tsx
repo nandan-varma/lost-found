@@ -28,7 +28,7 @@ async function MembersContent({ organizationId }: { organizationId: string }) {
         <Suspense fallback={<MembersTableSkeleton />}>
           <div className="rounded-lg border">
             <div className="p-4">
-              <MembersTable members={members} />
+              <MembersTable members={members} organizationId={organizationId} />
             </div>
           </div>
         </Suspense>

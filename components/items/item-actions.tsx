@@ -4,11 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import type { ItemStatus } from "@/db/schema";
 import { queryKeys } from "@/lib/query-keys";
 import { updateItemStatus } from "@/server/items";
 
 interface ItemActionsProps {
-  currentStatus: string;
+  currentStatus: ItemStatus;
   itemId: string;
   organizationId: string;
 }
@@ -32,7 +33,7 @@ export function ItemActions({
           queryKey: queryKeys.items.all(organizationId),
         });
       } else {
-        toast.error(result.error as string);
+        toast.error(result.error);
       }
     },
   });

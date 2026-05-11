@@ -9,8 +9,9 @@ import { db } from "@/db/drizzle";
 import { schema } from "@/db/schema";
 import { findOrgByDomain, getActiveOrganization } from "@/server/organizations";
 import { admin, member, owner } from "./auth/permissions";
+import { getEnv } from "./env";
 
-const resend = new Resend(process.env.RESEND_API_KEY as string);
+const resend = new Resend(getEnv("RESEND_API_KEY"));
 
 export const auth = betterAuth({
   rateLimit: {
@@ -26,9 +27,9 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
-      clientId: process.env.MICROSOFT_CLIENT_ID as string,
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string,
-      tenantId: process.env.MICROSOFT_TENANT_ID as string,
+      clientId: getEnv("MICROSOFT_CLIENT_ID"),
+      clientSecret: getEnv("MICROSOFT_CLIENT_SECRET"),
+      tenantId: getEnv("MICROSOFT_TENANT_ID"),
       prompt: "select_account",
       scopes: ["openid", "profile", "email"],
       mapProfileToUser: (profile) => ({

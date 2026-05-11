@@ -4,10 +4,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/query-keys";
 import { removeMember } from "@/server/members";
 import { Button } from "./ui/button";
 
-export default function MembersTableAction({ memberId }: { memberId: string }) {
+export default function MembersTableAction({
+  memberId,
+  organizationId,
+}: {
+  memberId: string;
+  organizationId: string;
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -16,10 +23,12 @@ export default function MembersTableAction({ memberId }: { memberId: string }) {
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Member removed from organization");
-        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.members.all(organizationId),
+        });
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to remove member");
+        toast.error(result.error);
       }
     },
     onError: () => {

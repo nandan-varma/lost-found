@@ -5,19 +5,33 @@ import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { db } from "@/db/drizzle";
+import type { Organization } from "@/db/schema";
 import { member, organization } from "@/db/schema";
+import type { ActionResult } from "@/lib/action-response";
 import { auth } from "@/lib/auth";
 import { getSession } from "@/lib/get-session";
 import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
 
-export async function getOrganizations(userId?: string) {
+type OrganizationWithMembers = NonNullable<
+  Awaited<ReturnType<typeof db.query.organization.findFirst>>
+>;
+type OrganizationBySlugResult = OrganizationWithMembers & { isAdmin: boolean };
+
+export async function getOrganizations(
+  userId?: string
+): Promise<Organization[]> {
   let resolvedUserId = userId;
 
   if (!resolvedUserId) {
-    const { currentUser } = await getCurrentUser();
-    resolvedUserId = currentUser.id;
+    const sessionData = await getCurrentUser();
+
+    if (!sessionData) {
+      return [];
+    }
+
+    resolvedUserId = sessionData.currentUser.id;
   }
 
   const members = await db.query.member.findMany({
@@ -34,7 +48,9 @@ export async function getOrganizations(userId?: string) {
   return organizations;
 }
 
-export async function getActiveOrganization(userId: string) {
+export async function getActiveOrganization(
+  userId: string
+): Promise<Organization | null> {
   try {
     const memberUser = await db.query.member.findFirst({
       where: eq(member.userId, userId),
@@ -54,7 +70,9 @@ export async function getActiveOrganization(userId: string) {
   }
 }
 
-export async function getAllOrganizations(userId?: string) {
+export async function getAllOrganizations(
+  userId?: string
+): Promise<Organization[]> {
   try {
     if (!userId) {
       const session = await getSession();
@@ -71,9 +89,17 @@ export async function getAllOrganizations(userId?: string) {
   }
 }
 
-export async function joinOrganization(orgId: string) {
+export async function joinOrganization(
+  orgId: string
+): Promise<ActionResult<null>> {
   try {
-    const { currentUser } = await getCurrentUser();
+    const sessionData = await getCurrentUser();
+
+    if (!sessionData) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const { currentUser } = sessionData;
 
     const existing = await db.query.member.findFirst({
       where: (fields, { eq, and }) =>
@@ -85,7 +111,7 @@ export async function joinOrganization(orgId: string) {
 
     if (existing) {
       return {
-        success: false as const,
+        success: false,
         error: "You are already a member of this organization",
       };
     }
@@ -98,17 +124,20 @@ export async function joinOrganization(orgId: string) {
       createdAt: new Date(),
     });
 
-    return { success: true as const, error: null };
+    return { success: true, data: null };
   } catch {
-    return { success: false as const, error: "Failed to join organization" };
+    return { success: false, error: "Failed to join organization" };
   }
 }
 
-export async function createOrganization(name: string, slug: string) {
+export async function createOrganization(
+  name: string,
+  slug: string
+): Promise<ActionResult<null>> {
   try {
     if (process.env.FEATURE_FLAG_CREATE_ORGANIZATION !== "true") {
       return {
-        success: false as const,
+        success: false,
         error: "Organization creation is disabled",
       };
     }
@@ -116,7 +145,7 @@ export async function createOrganization(name: string, slug: string) {
     const session = await getSession();
 
     if (!session) {
-      return { success: false as const, error: "Not authenticated" };
+      return { success: false, error: "Not authenticated" };
     }
 
     const parsed = createOrganizationSchema.safeParse({ name, slug });
@@ -127,7 +156,7 @@ export async function createOrganization(name: string, slug: string) {
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
       return {
-        success: false as const,
+        success: false,
         error: messages || "Invalid organization data",
       };
     }
@@ -144,13 +173,15 @@ export async function createOrganization(name: string, slug: string) {
       .set({ domain })
       .where(eq(organization.id, org.id));
 
-    return { success: true as const, error: null };
+    return { success: true, data: null };
   } catch {
-    return { success: false as const, error: "Failed to create organization" };
+    return { success: false, error: "Failed to create organization" };
   }
 }
 
-export async function findOrgByDomain(domain: string) {
+export async function findOrgByDomain(
+  domain: string
+): Promise<Organization | null> {
   try {
     const org = await db.query.organization.findFirst({
       where: eq(organization.domain, domain),
@@ -162,13 +193,16 @@ export async function findOrgByDomain(domain: string) {
   }
 }
 
-export async function updateOrganizationDomain(orgId: string, domain: string) {
+export async function updateOrganizationDomain(
+  orgId: string,
+  domain: string
+): Promise<ActionResult<null>> {
   try {
     const admin = await isOrgAdmin(orgId);
 
     if (!admin) {
       return {
-        success: false as const,
+        success: false,
         error: "Only admins can update organization settings",
       };
     }
@@ -177,7 +211,7 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
 
     if (!parsedDomain.success) {
       return {
-        success: false as const,
+        success: false,
         error: "Invalid domain format",
       };
     }
@@ -191,7 +225,7 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
 
       if (existing && existing.id !== orgId) {
         return {
-          success: false as const,
+          success: false,
           error: "This domain is already in use by another organization",
         };
       }
@@ -202,14 +236,17 @@ export async function updateOrganizationDomain(orgId: string, domain: string) {
       .set({ domain: cleanDomain })
       .where(eq(organization.id, orgId));
 
-    return { success: true as const, error: null };
+    return { success: true, data: null };
   } catch {
-    return { success: false as const, error: "Failed to update domain" };
+    return { success: false, error: "Failed to update domain" };
   }
 }
 
 export const getOrganizationBySlug = cache(
-  async (slug: string, userId?: string) => {
+  async (
+    slug: string,
+    userId?: string
+  ): Promise<OrganizationBySlugResult | null> => {
     try {
       const organizationBySlug = await db.query.organization.findFirst({
         where: eq(organization.slug, slug),
@@ -232,7 +269,11 @@ export const getOrganizationBySlug = cache(
         const session = await getSession();
 
         if (!session) {
-          return { ...organizationBySlug, members: [], isAdmin: false };
+          return {
+            ...(organizationBySlug as OrganizationWithMembers),
+            members: [],
+            isAdmin: false,
+          };
         }
 
         resolvedUserId = session.user.id;
@@ -245,10 +286,17 @@ export const getOrganizationBySlug = cache(
       );
 
       if (!isAdmin) {
-        return { ...organizationBySlug, members: [], isAdmin: false };
+        return {
+          ...(organizationBySlug as OrganizationWithMembers),
+          members: [],
+          isAdmin: false,
+        };
       }
 
-      return { ...organizationBySlug, isAdmin: true };
+      return {
+        ...(organizationBySlug as OrganizationWithMembers),
+        isAdmin: true,
+      };
     } catch {
       return null;
     }

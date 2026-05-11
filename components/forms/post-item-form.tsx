@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_FILE_SIZE, MAX_ITEM_IMAGES } from "@/lib/constants";
 import { queryKeys } from "@/lib/query-keys";
 import { createItem } from "@/server/items";
 
@@ -76,7 +77,7 @@ export function PostItemForm({
         });
         router.push(`/app/${organizationSlug}/items/${result.data.id}`);
       } else {
-        toast.error(result.error as string);
+        toast.error(result.error);
       }
     },
   });
@@ -85,19 +86,19 @@ export function PostItemForm({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
       const validFiles = files.filter(
-        (f) => f.type.startsWith("image/") && f.size <= 10 * 1024 * 1024
+        (f) => f.type.startsWith("image/") && f.size <= MAX_FILE_SIZE
       );
 
       if (validFiles.length !== files.length) {
         toast.error("Some files were skipped (must be images under 10 MB)");
       }
 
-      const remaining = 5 - selectedImages.length;
+      const remaining = MAX_ITEM_IMAGES - selectedImages.length;
       const toAdd = validFiles.slice(0, remaining);
 
       if (toAdd.length !== validFiles.length) {
         toast.error(
-          `Maximum 5 images allowed. ${validFiles.length - remaining} skipped.`
+          `Maximum ${MAX_ITEM_IMAGES} images allowed. ${validFiles.length - remaining} skipped.`
         );
       }
 
@@ -206,7 +207,7 @@ export function PostItemForm({
         />
 
         <FormItem>
-          <FormLabel>Photos (max 5)</FormLabel>
+          <FormLabel>Photos (max {MAX_ITEM_IMAGES})</FormLabel>
           <FormControl>
             <div className="space-y-3">
               <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed p-6 text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary">
@@ -215,7 +216,7 @@ export function PostItemForm({
                 <input
                   accept="image/*"
                   className="hidden"
-                  disabled={selectedImages.length >= 5}
+                  disabled={selectedImages.length >= MAX_ITEM_IMAGES}
                   multiple
                   onChange={handleImageSelect}
                   type="file"

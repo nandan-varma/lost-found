@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryKeys } from "@/lib/query-keys";
 import { updateOrganizationDomain } from "@/server/organizations";
 
 interface SetDomainFormProps {
@@ -33,7 +34,9 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Domain updated");
-        queryClient.invalidateQueries({ queryKey: ["organization", orgId] });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.organizations.byId(orgId),
+        });
         router.refresh();
       } else {
         toast.error(result.error);
@@ -56,10 +59,13 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
   }
 
   function handleRemove() {
-    mutation.mutate("");
-    if (!mutation.isPending) {
-      setDomain("");
-    }
+    mutation.mutate("", {
+      onSuccess: (result) => {
+        if (result.success) {
+          setDomain("");
+        }
+      },
+    });
   }
 
   return (

@@ -1,17 +1,22 @@
 "use server";
 
 import { eq, ilike, inArray, not, or } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
+import type { User } from "@/db/schema";
 import { member, user } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
 import { isOrgAdmin } from "./permissions";
 
-export const getCurrentUser = async () => {
+type SessionData = NonNullable<Awaited<ReturnType<typeof getSession>>>;
+type CurrentUserResult = SessionData & {
+  currentUser: SessionData["user"] & { image: string | null };
+};
+
+export const getCurrentUser = async (): Promise<CurrentUserResult | null> => {
   const session = await getSession();
 
   if (!session) {
-    redirect("/login");
+    return null;
   }
 
   return {
@@ -23,7 +28,10 @@ export const getCurrentUser = async () => {
   };
 };
 
-export const getUsers = async (organizationId: string, userId?: string) => {
+export const getUsers = async (
+  organizationId: string,
+  userId?: string
+): Promise<User[]> => {
   try {
     const admin = await isOrgAdmin(organizationId, userId);
 
@@ -54,7 +62,7 @@ export const searchUsers = async (
   organizationId: string,
   query: string,
   userId?: string
-) => {
+): Promise<User[]> => {
   try {
     const admin = await isOrgAdmin(organizationId, userId);
 

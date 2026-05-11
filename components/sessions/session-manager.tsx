@@ -82,6 +82,11 @@ export function SessionManager() {
 
     try {
       await authClient.revokeOtherSessions();
+      const session = await authClient.getSession();
+      if (!session.data?.session) {
+        await authClient.signOut();
+        return;
+      }
       toast.success("Other sessions revoked");
       await loadSessions();
     } catch {
@@ -96,8 +101,8 @@ export function SessionManager() {
 
     try {
       await authClient.revokeSessions();
-      toast.success("All sessions revoked");
-      await loadSessions();
+      await authClient.signOut();
+      return;
     } catch {
       toast.error("Unable to revoke sessions");
     } finally {

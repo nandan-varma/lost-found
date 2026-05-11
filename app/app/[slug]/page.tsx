@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { ItemList } from "@/components/items/item-list";
 import { ItemListSkeleton } from "@/components/skeletons";
 import { getSession } from "@/lib/get-session";
-import { itemStatusSchema } from "@/lib/validations";
+import { createItemStatusSchema } from "@/lib/validations";
 import { getItems } from "@/server/items";
 import { getOrganizationBySlug } from "@/server/organizations";
 
@@ -29,7 +29,7 @@ async function ItemsContent({
     );
   }
 
-  const parsedStatus = itemStatusSchema.safeParse(status);
+  const parsedStatus = createItemStatusSchema.safeParse(status);
 
   const items = await getItems(
     organization.id,

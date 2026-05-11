@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Header } from "@/components/header";
 import { HeaderSkeleton } from "@/components/skeletons";
@@ -6,6 +7,11 @@ import { getCurrentUser } from "@/server/users";
 
 async function HeaderContent() {
   const sessionData = await getCurrentUser();
+
+  if (!sessionData) {
+    redirect("/login");
+  }
+
   const { currentUser } = sessionData;
   const organizations = await getOrganizations(currentUser.id);
   const activeOrganizationId = sessionData.session.activeOrganizationId ?? null;

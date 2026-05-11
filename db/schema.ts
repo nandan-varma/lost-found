@@ -89,7 +89,6 @@ export const organization = pgTable("organization", {
   domain: text("domain").unique(),
   logo: text("logo"),
   createdAt: timestamp("created_at").notNull(),
-  metadata: text("metadata"),
 });
 
 export const organizationRelations = relations(organization, ({ many }) => ({
@@ -242,7 +241,7 @@ export const memberRelations = relations(member, ({ one }) => ({
 }));
 
 export type Member = typeof member.$inferSelect & {
-  user: typeof user.$inferSelect;
+  user?: typeof user.$inferSelect;
 };
 
 export type User = typeof user.$inferSelect;
