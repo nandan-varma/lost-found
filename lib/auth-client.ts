@@ -4,4 +4,15 @@ import { createAuthClient } from "better-auth/react";
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   plugins: [organizationClient()],
+  fetchOptions: {
+    onError: (context) => {
+      const { response } = context;
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("X-Retry-After");
+        throw new Error(
+          `Rate limited. Please try again in ${retryAfter} seconds.`
+        );
+      }
+    },
+  },
 });

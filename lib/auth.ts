@@ -13,6 +13,11 @@ import { admin, member, owner } from "./auth/permissions";
 const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 export const auth = betterAuth({
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+  },
   session: {
     cookieCache: {
       enabled: true,
