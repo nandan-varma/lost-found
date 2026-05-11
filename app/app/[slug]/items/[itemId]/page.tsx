@@ -1,11 +1,8 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ItemDetail } from "@/components/items/item-detail";
 import { ItemDetailSkeleton } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
 import { getSession } from "@/lib/get-session";
 import { getQueryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
@@ -43,17 +40,6 @@ async function ItemDetailContent({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-      <Button
-        asChild
-        className="mb-6 px-0 text-muted-foreground"
-        size="sm"
-        variant="link"
-      >
-        <Link href={`/app/${slug}`}>
-          <ArrowLeft className="mr-1 size-4" />
-          Back to items
-        </Link>
-      </Button>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ItemDetail
           isOwnerOrAdmin={isOwnerOrAdmin}

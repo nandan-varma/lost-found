@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { OrgNav } from "@/components/items/org-nav";
-import { Button } from "@/components/ui/button";
+import { OrgBreadcrumb } from "@/components/items/org-breadcrumb";
 import { getSession } from "@/lib/get-session";
 import { getOrganizationBySlug } from "@/server/organizations";
 
@@ -23,18 +21,12 @@ export default async function OrganizationLayout({
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-20 pb-10">
-      <div className="mb-2">
-        <Button
-          asChild
-          className="px-0 text-muted-foreground"
-          size="sm"
-          variant="link"
-        >
-          <Link href="/app">Dashboard</Link>
-        </Button>
-      </div>
-      <OrgNav isAdmin={isAdmin} organizationSlug={slug} />
-      <div className="mt-6">{children}</div>
+      <OrgBreadcrumb
+        isAdmin={isAdmin}
+        organizationName={orgData?.name ?? slug}
+        organizationSlug={slug}
+      />
+      {children}
     </div>
   );
 }

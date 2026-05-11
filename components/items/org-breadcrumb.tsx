@@ -12,21 +12,23 @@ import {
 } from "@/components/ui/breadcrumb";
 
 interface OrgBreadcrumbProps {
+  isAdmin: boolean;
   organizationName: string;
   organizationSlug: string;
 }
 
 export function OrgBreadcrumb({
+  isAdmin,
   organizationName,
   organizationSlug,
 }: OrgBreadcrumbProps) {
   const pathname = usePathname();
   const basePath = `/app/${organizationSlug}`;
 
-  const currentPage = getCurrentPage(pathname, basePath);
+  const currentPage = getCurrentPage(pathname, basePath, isAdmin);
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
@@ -39,27 +41,36 @@ export function OrgBreadcrumb({
             <Link href={basePath}>{organizationName}</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
-        </BreadcrumbItem>
+        {currentPage && (
+          <>
+            <BreadcrumbSeparator />
+            <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+          </>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   );
 }
 
-function getCurrentPage(pathname: string, basePath: string): string {
+function getCurrentPage(
+  pathname: string,
+  basePath: string,
+  isAdmin: boolean
+): string | null {
   if (pathname.startsWith(`${basePath}/new`)) {
-    return "New Post";
+    return "Post Item";
   }
 
-  if (pathname.startsWith(`${basePath}/settings`)) {
+  if (pathname.startsWith(`${basePath}/settings`) && isAdmin) {
     return "Settings";
   }
 
-  if (pathname.startsWith(`${basePath}/items/`)) {
+  if (
+    pathname.startsWith(`${basePath}/items/`) &&
+    !pathname.endsWith("/items")
+  ) {
     return "Item Details";
   }
 
-  return "Items";
+  return null;
 }

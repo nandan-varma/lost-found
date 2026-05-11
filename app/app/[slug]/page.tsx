@@ -42,6 +42,7 @@ async function ItemsContent({
       <ItemList
         activeStatus={parsedStatus.success ? parsedStatus.data : undefined}
         initialItems={items}
+        isAdmin={organization.isAdmin}
         organizationId={organization.id}
         organizationSlug={slug}
       />
