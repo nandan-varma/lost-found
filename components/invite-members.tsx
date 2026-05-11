@@ -7,7 +7,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { inviteMember } from "@/server/members";
 import { searchUsers } from "@/server/users";
 
 interface InviteMembersProps {
@@ -30,20 +30,14 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
 
   const mutation = useMutation({
     mutationFn: async (email: string) => {
-      const { error } = await authClient.organization.inviteMember({
-        email,
-        role: "member",
-        organizationId,
-      });
-
-      if (error) {
-        throw new Error(error.message);
+      const result = await inviteMember(organizationId, email);
+      if (!result.success) {
+        throw new Error(result.error ?? "Failed to invite");
       }
-
-      return email;
+      return result.message ?? email;
     },
-    onSuccess: (email) => {
-      toast.success(`Invitation sent to ${email}`);
+    onSuccess: (message) => {
+      toast.success(message ?? "Member added");
       queryClient.invalidateQueries({ queryKey: ["members", organizationId] });
       queryClient.invalidateQueries({
         queryKey: ["users", "search", organizationId],
@@ -51,7 +45,7 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
       router.refresh();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to send invitation");
+      toast.error(error.message || "Failed to invite member");
     },
   });
 

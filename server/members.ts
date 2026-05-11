@@ -1,26 +1,65 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { member, type Role } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { member, type Role, user } from "@/db/schema";
 import { isOrgAdmin } from "./permissions";
 
-export const addMember = async (
+export const inviteMember = async (
   organizationId: string,
-  userId: string,
-  role: Role
+  email: string,
+  role: Role = "member"
 ) => {
   try {
-    await auth.api.addMember({
-      body: {
-        userId,
-        organizationId,
-        role,
-      },
+    const admin = await isOrgAdmin(organizationId);
+
+    if (!admin) {
+      throw new Error(
+        "You are not allowed to invite users to this organization"
+      );
+    }
+
+    const existingUser = await db.query.user.findFirst({
+      where: eq(user.email, email),
     });
-  } catch {
-    throw new Error("Failed to add member.");
+
+    if (existingUser) {
+      const existingMember = await db.query.member.findFirst({
+        where: and(
+          eq(member.organizationId, organizationId),
+          eq(member.userId, existingUser.id)
+        ),
+      });
+
+      if (existingMember) {
+        throw new Error("User is already a member of this organization");
+      }
+
+      await db.insert(member).values({
+        id: randomUUID(),
+        organizationId,
+        userId: existingUser.id,
+        role,
+        createdAt: new Date(),
+      });
+
+      return {
+        success: true,
+        message: `${existingUser.name || email} added as member`,
+      };
+    }
+
+    return {
+      success: false,
+      error:
+        "User not found. They must sign up first or use a domain that matches this organization.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to invite member",
+    };
   }
 };
 
