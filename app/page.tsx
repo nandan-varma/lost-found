@@ -41,7 +41,7 @@ export default async function Home() {
   const session = await getSession();
 
   if (session) {
-    redirect("/dashboard");
+    redirect("/app");
   }
   return (
     <div className="flex min-h-screen flex-col">

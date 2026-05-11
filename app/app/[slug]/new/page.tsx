@@ -42,13 +42,13 @@ export default async function PostItemPage({ params }: { params: Params }) {
   const [organization] = await Promise.all([getOrganizationBySlug(slug)]);
 
   if (!organization) {
-    redirect("/dashboard");
+    redirect("/app");
   }
 
   const isMember = await isOrgMember(organization.id);
 
   if (!isMember) {
-    redirect(`/dashboard/organization/${slug}`);
+    redirect(`/app/${slug}`);
   }
 
   return (

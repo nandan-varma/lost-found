@@ -27,7 +27,7 @@ export default function DashboardError({
       <div className="flex justify-center gap-3">
         <Button onClick={reset}>Try again</Button>
         <Button asChild variant="outline">
-          <Link href="/dashboard">Back to dashboard</Link>
+          <Link href="/app">Back to dashboard</Link>
         </Button>
       </div>
     </div>

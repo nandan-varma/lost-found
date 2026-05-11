@@ -49,9 +49,7 @@ export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.items.detail(itemId),
         });
-        router.push(
-          `/dashboard/organization/${organizationSlug}/items/${itemId}`
-        );
+        router.push(`/app/${organizationSlug}/items/${itemId}`);
       } else {
         toast.error(result.error as string);
       }

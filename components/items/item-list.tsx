@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Item, ItemImage } from "@/db/schema";
 import { queryKeys } from "@/lib/query-keys";
@@ -23,7 +24,7 @@ export function ItemList({
   activeStatus,
 }: ItemListProps) {
   const router = useRouter();
-  const baseHref = `/dashboard/organization/${organizationSlug}`;
+  const baseHref = `/app/${organizationSlug}`;
 
   const { data: items } = useQuery({
     queryKey: queryKeys.items.filtered(organizationId, activeStatus),
@@ -55,12 +56,9 @@ export function ItemList({
           <p className="mt-1 text-muted-foreground text-sm">
             {emptyMessage(activeStatus)}
           </p>
-          <Link
-            className="mt-4 inline-block font-medium text-primary text-sm underline underline-offset-4 hover:text-primary/80"
-            href={`${baseHref}/post`}
-          >
-            Post an item
-          </Link>
+          <Button asChild className="mt-5" size="sm">
+            <Link href={`${baseHref}/post`}>New Post</Link>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">

@@ -18,7 +18,7 @@ export function ItemCard({
   const firstImage = i.images[0];
 
   return (
-    <Link href={`/dashboard/organization/${organizationSlug}/items/${i.id}`}>
+    <Link href={`/app/${organizationSlug}/items/${i.id}`}>
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {firstImage ? (

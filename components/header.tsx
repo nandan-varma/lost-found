@@ -47,7 +47,7 @@ export function Header({
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-4">
-          <Link className="font-bold text-sm tracking-tight" href="/dashboard">
+          <Link className="font-bold text-sm tracking-tight" href="/app">
             Lost and Found
           </Link>
           {organizations.length > 0 && (
@@ -78,6 +78,9 @@ export function Header({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings/sessions">Sessions</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 size-4" />
                 Log out

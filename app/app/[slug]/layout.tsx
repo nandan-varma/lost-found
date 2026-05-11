@@ -30,7 +30,7 @@ export default async function OrganizationLayout({
           size="sm"
           variant="link"
         >
-          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/app">Dashboard</Link>
         </Button>
       </div>
       <OrgNav isAdmin={isAdmin} organizationSlug={slug} />

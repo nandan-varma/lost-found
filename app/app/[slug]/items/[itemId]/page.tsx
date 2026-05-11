@@ -49,7 +49,7 @@ async function ItemDetailContent({
         size="sm"
         variant="link"
       >
-        <Link href={`/dashboard/organization/${slug}`}>
+        <Link href={`/app/${slug}`}>
           <ArrowLeft className="mr-1 size-4" />
           Back to items
         </Link>

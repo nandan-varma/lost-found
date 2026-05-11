@@ -74,9 +74,7 @@ export function PostItemForm({
         queryClient.invalidateQueries({
           queryKey: queryKeys.items.all(organizationId),
         });
-        router.push(
-          `/dashboard/organization/${organizationSlug}/items/${result.data.id}`
-        );
+        router.push(`/app/${organizationSlug}/items/${result.data.id}`);
       } else {
         toast.error(result.error as string);
       }

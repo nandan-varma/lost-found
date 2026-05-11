@@ -55,7 +55,7 @@ export default async function Dashboard({
   ]);
 
   if (!create && organizations.length === 1) {
-    redirect(`/dashboard/organization/${organizations[0].slug}`);
+    redirect(`/app/${organizations[0].slug}`);
   }
 
   return (
@@ -70,7 +70,7 @@ export default async function Dashboard({
       {organizations.length > 0 ? (
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {organizations.map((org) => (
-            <Link href={`/dashboard/organization/${org.slug}`} key={org.id}>
+            <Link href={`/app/${org.slug}`} key={org.id}>
               <div className="flex h-full items-center gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-md">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Building2 className="size-5" />

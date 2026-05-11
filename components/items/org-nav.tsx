@@ -11,13 +11,13 @@ interface OrgNavProps {
 export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const basePath = `/dashboard/organization/${organizationSlug}`;
+  const basePath = `/app/${organizationSlug}`;
 
   function getTabValue(): string {
-    if (pathname.startsWith(`${basePath}/post`)) {
+    if (pathname.startsWith(`${basePath}/new`)) {
       return "post";
     }
-    if (isAdmin && pathname.startsWith(`${basePath}/members`)) {
+    if (isAdmin && pathname.startsWith(`${basePath}/settings`)) {
       return "members";
     }
     return "items";
@@ -28,14 +28,16 @@ export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
   return (
     <Tabs
       onValueChange={(value) =>
-        router.push(`${basePath}${value === "items" ? "" : `/${value}`}`)
+        router.push(
+          `${basePath}${value === "items" ? "" : `/${value === "post" ? "new" : value}`}`
+        )
       }
       value={tabValue}
     >
       <TabsList variant="line">
         <TabsTrigger value="items">Items</TabsTrigger>
         <TabsTrigger value="post">Post Item</TabsTrigger>
-        {isAdmin && <TabsTrigger value="members">Members</TabsTrigger>}
+        {isAdmin && <TabsTrigger value="settings">Settings</TabsTrigger>}
       </TabsList>
     </Tabs>
   );

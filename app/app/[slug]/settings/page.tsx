@@ -61,7 +61,7 @@ export default async function MembersPage({ params }: { params: Params }) {
   const organization = await getOrganizationBySlug(slug, session.user.id);
 
   if (!organization) {
-    redirect("/dashboard");
+    redirect("/app");
   }
 
   const currentMember = await db.query.member.findFirst({
@@ -75,13 +75,13 @@ export default async function MembersPage({ params }: { params: Params }) {
     currentMember?.role === "admin" || currentMember?.role === "owner";
 
   if (!isAdmin) {
-    redirect(`/dashboard/organization/${slug}`);
+    redirect(`/app/${slug}`);
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:py-12">
       <div className="space-y-2">
-        <h1 className="font-bold text-3xl">Members</h1>
+        <h1 className="font-bold text-3xl">Settings</h1>
         <p className="text-muted-foreground text-sm">
           Manage members and organization settings
         </p>

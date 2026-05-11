@@ -22,7 +22,7 @@ export function LoginForm({
             onClick={() =>
               authClient.signIn.social({
                 provider: "microsoft",
-                callbackURL: "/dashboard",
+                callbackURL: "/app",
               })
             }
             variant="outline"
