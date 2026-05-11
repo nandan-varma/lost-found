@@ -37,8 +37,8 @@ export function ItemList({
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-4">
+      <div className="space-y-4 sm:space-y-6">
         <Tabs
           onValueChange={(value) =>
             router.push(
@@ -53,20 +53,26 @@ export function ItemList({
             <TabsTrigger value="found">Found</TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex gap-2">
+
+        <div className="flex flex-wrap gap-2">
           {isAdmin && (
-            <Button asChild size="sm" variant="outline">
+            <Button
+              asChild
+              className="flex-1 sm:flex-none"
+              size="sm"
+              variant="outline"
+            >
               <Link href={`${baseHref}/settings`}>
-                <Settings className="mr-2 size-4" />
-                Settings
+                <Settings className="mr-1.5 size-4" />
+                <span className="hidden sm:inline">Settings</span>
               </Link>
             </Button>
           )}
-          <Button asChild size="sm">
+          <Button asChild className="flex-1 sm:flex-none" size="sm">
             <Link href={`${baseHref}/new`}>
-              <Plus className="mr-2 size-4" />
-              <span className="sm:hidden lg:inline">New Post</span>
-              <span className="sm:inline lg:hidden">+</span>
+              <Plus className="mr-1.5 size-4" />
+              <span className="hidden sm:inline">New Post</span>
+              <span className="sm:hidden">+</span>
             </Link>
           </Button>
         </div>
