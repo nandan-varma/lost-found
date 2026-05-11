@@ -1,4 +1,5 @@
 import { Building2, Plus } from "lucide-react";
+import type { Metadata } from "next";
 import dynamicImport from "next/dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -7,6 +8,10 @@ import { getSession } from "@/lib/get-session";
 import { getAllOrganizations, getOrganizations } from "@/server/organizations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 const CreateOrganizationDialog = dynamicImport(
   () =>

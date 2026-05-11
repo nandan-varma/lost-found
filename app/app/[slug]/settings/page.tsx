@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -15,6 +16,14 @@ import { getOrganizationMembers } from "@/server/members";
 import { getOrganizationBySlug } from "@/server/organizations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Organization settings",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type Params = Promise<{ slug: string }>;
 

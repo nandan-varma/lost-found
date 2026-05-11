@@ -1,4 +1,5 @@
 import { ArrowRight, Eye, MapPin, Search, Shield, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModeSwitcher } from "@/components/mode-switcher";
@@ -36,6 +37,15 @@ const features = [
     description: "Upload multiple photos to help identify lost or found items.",
   },
 ];
+
+export const metadata: Metadata = {
+  title: "Lost and Found for Organizations",
+  description:
+    "Track lost and found items across your school, office, or community with a simple shared workspace.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function Home() {
   const session = await getSession();

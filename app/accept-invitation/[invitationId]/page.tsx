@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { Building2, CheckCircle, LogIn, UserPlus, X } from "lucide-react";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -13,6 +14,14 @@ import {
   user,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Accept invitation",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function getInvitation(id: string) {
   const inv = await db

@@ -1,4 +1,5 @@
 import { ArrowLeft, FileSearch } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -9,6 +10,14 @@ import { getOrganizationBySlug } from "@/server/organizations";
 import { isOrgMember } from "@/server/permissions";
 
 type Params = Promise<{ slug: string }>;
+
+export const metadata: Metadata = {
+  title: "Post an item",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function PostItemContent({
   slug,

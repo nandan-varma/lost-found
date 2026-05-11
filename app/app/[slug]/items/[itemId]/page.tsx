@@ -1,5 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -15,6 +16,24 @@ import { isItemOwnerOrAdmin } from "@/server/permissions";
 export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string; itemId: string }>;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const { itemId } = await params;
+  const item = await getItem(itemId);
+
+  return {
+    title: item ? item.title : "Item",
+    description: item?.description ?? "Item details",
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 async function ItemDetailContent({
   slug,

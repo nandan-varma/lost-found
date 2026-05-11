@@ -1,6 +1,16 @@
 import { FileSearch } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/forms/login-form";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description:
+    "Sign in with your organization account to access Lost and Found.",
+  alternates: {
+    canonical: "/login",
+  },
+};
 
 export default function LoginPage() {
   return (

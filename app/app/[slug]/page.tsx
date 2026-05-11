@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ItemList } from "@/components/items/item-list";
 import { ItemListSkeleton } from "@/components/skeletons";
@@ -9,6 +10,22 @@ import { getOrganizationBySlug } from "@/server/organizations";
 export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  return {
+    title: `${slug} items`,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 async function ItemsContent({
   slug,
@@ -33,8 +50,7 @@ async function ItemsContent({
 
   const items = await getItems(
     organization.id,
-    parsedStatus.success ? parsedStatus.data : undefined,
-    session?.user.id
+    parsedStatus.success ? parsedStatus.data : undefined
   );
 
   return (

@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Header } from "@/components/header";
 import { HeaderSkeleton } from "@/components/skeletons";
 import { getOrganizations } from "@/server/organizations";
 import { getCurrentUser } from "@/server/users";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function HeaderContent() {
   const sessionData = await getCurrentUser();

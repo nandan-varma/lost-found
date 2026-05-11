@@ -1,7 +1,16 @@
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SessionManager } from "@/components/sessions/session-manager";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Sessions",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function SessionsPage() {
   return (
