@@ -84,7 +84,7 @@ export const inviteMember = async (
       inviterId: session.user.id,
     });
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${invId}`;
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invId}`;
 
     await resend.emails.send({
       from: `${process.env.EMAIL_SENDER_NAME} <${process.env.EMAIL_SENDER_ADDRESS}>`,
