@@ -3,8 +3,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import AllUsers from "@/components/all-users";
 import { SetDomainForm } from "@/components/forms/set-domain-form";
+import { InviteMembers } from "@/components/invite-members";
 import MembersTable from "@/components/members-table";
 import { MembersTableSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -13,26 +13,16 @@ import { member } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
 import { getOrganizationMembers } from "@/server/members";
 import { getOrganizationBySlug } from "@/server/organizations";
-import { getUsers } from "@/server/users";
 
 export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
 
-async function MembersContent({
-  organizationId,
-  userId,
-}: {
-  organizationId: string;
-  userId: string;
-}) {
-  const [users, members] = await Promise.all([
-    getUsers(organizationId, userId),
-    getOrganizationMembers(organizationId),
-  ]);
+async function MembersContent({ organizationId }: { organizationId: string }) {
+  const members = await getOrganizationMembers(organizationId);
 
   return (
-    <>
+    <div className="space-y-6">
       <div>
         <h2 className="mb-3 font-semibold text-lg">Current Members</h2>
         <Suspense fallback={<MembersTableSkeleton />}>
@@ -46,9 +36,9 @@ async function MembersContent({
 
       <div>
         <h2 className="mb-3 font-semibold text-lg">Invite Members</h2>
-        <AllUsers organizationId={organizationId} users={users} />
+        <InviteMembers organizationId={organizationId} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -111,12 +101,7 @@ export default async function MembersPage({ params }: { params: Params }) {
           />
         )}
 
-        <Suspense fallback={<MembersTableSkeleton />}>
-          <MembersContent
-            organizationId={organization.id}
-            userId={session.user.id}
-          />
-        </Suspense>
+        <MembersContent organizationId={organization.id} />
       </div>
     </div>
   );

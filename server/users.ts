@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, inArray, not } from "drizzle-orm";
+import { eq, ilike, inArray, not, or } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { member, user } from "@/db/schema";
@@ -45,6 +45,38 @@ export const getUsers = async (organizationId: string, userId?: string) => {
     });
 
     return users;
+  } catch {
+    return [];
+  }
+};
+
+export const searchUsers = async (
+  organizationId: string,
+  query: string,
+  userId?: string
+) => {
+  try {
+    const admin = await isOrgAdmin(organizationId, userId);
+
+    if (!admin) {
+      return [];
+    }
+
+    const members = await db.query.member.findMany({
+      where: eq(member.organizationId, organizationId),
+    });
+
+    const memberUserIds = members.map((m) => m.userId);
+
+    const users = await db.query.user.findMany({
+      where: or(
+        ilike(user.email, `%${query}%`),
+        ilike(user.name, `%${query}%`)
+      ),
+      limit: 10,
+    });
+
+    return users.filter((u) => !memberUserIds.includes(u.id));
   } catch {
     return [];
   }
