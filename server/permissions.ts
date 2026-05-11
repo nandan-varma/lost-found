@@ -3,22 +3,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
-import { admin, member as memberRole, owner } from "@/lib/auth/permissions";
 import { getSession } from "@/lib/get-session";
-
-const roleMap = { member: memberRole, admin, owner } as const;
-
-function hasPermission(
-  role: string,
-  resource: string,
-  action: string
-): boolean {
-  const roleObj = roleMap[role as keyof typeof roleMap];
-  if (!roleObj) {
-    return false;
-  }
-  return roleObj.authorize({ [resource]: [action] }).success;
-}
 
 async function resolveUserId(userId?: string) {
   if (userId) {
@@ -49,7 +34,7 @@ export const isOrgAdmin = async (
     if (!membership) {
       return false;
     }
-    return hasPermission(membership.role, "item", "update");
+    return membership.role === "admin" || membership.role === "owner";
   } catch {
     return false;
   }
@@ -113,7 +98,7 @@ export const isItemOwnerOrAdmin = async (
     if (!membership) {
       return false;
     }
-    return hasPermission(membership.role, "item", "update");
+    return membership.role === "admin" || membership.role === "owner";
   } catch {
     return false;
   }

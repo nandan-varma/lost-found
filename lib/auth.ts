@@ -43,7 +43,11 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          const domain = user.email.split("@")[1];
+          const domain = user.email.split("@")[1]?.toLowerCase();
+          if (!domain) {
+            return;
+          }
+
           const org = await findOrgByDomain(domain);
           if (org) {
             await db.insert(schema.member).values({

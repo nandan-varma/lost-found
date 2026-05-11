@@ -3,7 +3,16 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { claim, type ItemStatus, item, itemImage } from "@/db/schema";
+import {
+  type Claim,
+  claim,
+  type Item,
+  type ItemImage,
+  type ItemStatus,
+  item,
+  itemImage,
+  type User,
+} from "@/db/schema";
 import type { ActionResult } from "@/lib/action-response";
 import { MAX_ITEM_IMAGES } from "@/lib/constants";
 import { getSession } from "@/lib/get-session";
@@ -11,14 +20,20 @@ import { deleteFile, uploadFile } from "@/lib/r2";
 import { claimItemSchema, createItemSchema } from "@/lib/validations";
 import { isItemOwnerOrAdmin, isOrgMember } from "./permissions";
 
-type ItemsResult = Awaited<ReturnType<typeof db.query.item.findMany>>;
-type ItemResult = Awaited<ReturnType<typeof db.query.item.findFirst>>;
+type ItemListResult = Item & { images: ItemImage[]; user: Pick<User, "name"> };
+type ItemDetailResult =
+  | (Item & {
+      images: ItemImage[];
+      user: User;
+      claim: Claim | null;
+    })
+  | null;
 
 export async function getItems(
   organizationId: string,
   status?: ItemStatus,
   userId?: string
-): Promise<ItemsResult> {
+): Promise<ItemListResult[]> {
   const member = await isOrgMember(organizationId, userId);
 
   if (!member) {
@@ -46,7 +61,7 @@ export async function getItems(
 export async function getItem(
   itemId: string,
   userId?: string
-): Promise<ItemResult> {
+): Promise<ItemDetailResult> {
   const itemRecord = await db.query.item.findFirst({
     where: eq(item.id, itemId),
     with: {
@@ -208,6 +223,29 @@ export async function updateItemStatus(
     };
   }
 
+  const validStatuses: ItemStatus[] = ["lost", "found", "claimed", "closed"];
+
+  const transitions: Record<ItemStatus, ItemStatus[]> = {
+    lost: ["found", "closed"],
+    found: ["claimed", "closed"],
+    claimed: ["closed"],
+    closed: [],
+  };
+
+  if (!validStatuses.includes(newStatus)) {
+    return {
+      success: false,
+      error: "Invalid item status.",
+    };
+  }
+
+  if (!transitions[itemRecord.status]?.includes(newStatus)) {
+    return {
+      success: false,
+      error: `Cannot transition from "${itemRecord.status}" to "${newStatus}".`,
+    };
+  }
+
   try {
     await db
       .update(item)
@@ -275,17 +313,19 @@ export async function claimItem(
   }
 
   try {
-    await db.insert(claim).values({
-      itemId,
-      claimantName: parsed.data.claimantName,
-      claimantEmail: parsed.data.claimantEmail,
-      message: parsed.data.message ?? null,
-    });
+    await db.transaction(async (tx) => {
+      await tx.insert(claim).values({
+        itemId,
+        claimantName: parsed.data.claimantName,
+        claimantEmail: parsed.data.claimantEmail,
+        message: parsed.data.message ?? null,
+      });
 
-    await db
-      .update(item)
-      .set({ status: "claimed", updatedAt: new Date() })
-      .where(eq(item.id, itemId));
+      await tx
+        .update(item)
+        .set({ status: "claimed", updatedAt: new Date() })
+        .where(eq(item.id, itemId));
+    });
 
     return { success: true, data: null };
   } catch {

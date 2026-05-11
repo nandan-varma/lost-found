@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Building2, CheckCircle, LogIn, UserPlus, X } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -194,18 +194,34 @@ async function acceptInvitationAsUser(invitationId: string, userId: string) {
     .where(eq(organization.id, inv.organizationId));
   const org = orgs[0];
 
-  await db.insert(member).values({
-    id: randomUUID(),
-    organizationId: inv.organizationId,
-    userId,
-    role: inv.role as "member",
-    createdAt: new Date(),
-  });
+  await db.transaction(async (tx) => {
+    const existingMembership = await tx.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, inv.organizationId),
+        eq(member.userId, userId)
+      ),
+    });
 
-  await db
-    .update(invitationTable)
-    .set({ status: "accepted" })
-    .where(eq(invitationTable.id, invitationId));
+    if (!existingMembership) {
+      await tx.insert(member).values({
+        id: randomUUID(),
+        organizationId: inv.organizationId,
+        userId,
+        role: (inv.role as "member" | "admin" | "owner") ?? "member",
+        createdAt: new Date(),
+      });
+    }
+
+    await tx
+      .update(invitationTable)
+      .set({ status: "accepted" })
+      .where(
+        and(
+          eq(invitationTable.id, invitationId),
+          eq(invitationTable.status, "pending")
+        )
+      );
+  });
 
   redirect(`/app/${org?.slug}`);
 }

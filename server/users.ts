@@ -76,10 +76,12 @@ export const searchUsers = async (
 
     const memberUserIds = members.map((m) => m.userId);
 
+    const searchQuery = query.slice(0, 100);
+
     const users = await db.query.user.findMany({
       where: or(
-        ilike(user.email, `%${query}%`),
-        ilike(user.name, `%${query}%`)
+        ilike(user.email, `%${searchQuery}%`),
+        ilike(user.name, `%${searchQuery}%`)
       ),
       limit: 10,
     });

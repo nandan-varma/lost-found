@@ -51,7 +51,7 @@ export default async function Dashboard({
 
   const [organizations, allOrganizations] = await Promise.all([
     getOrganizations(session.user.id),
-    getAllOrganizations(session.user.id),
+    getAllOrganizations(),
   ]);
 
   if (!create && organizations.length === 1) {

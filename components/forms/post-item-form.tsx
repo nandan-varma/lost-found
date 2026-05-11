@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,15 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MAX_FILE_SIZE, MAX_ITEM_IMAGES } from "@/lib/constants";
 import { queryKeys } from "@/lib/query-keys";
+import { createItemSchema } from "@/lib/validations";
 import { createItem } from "@/server/items";
 
-const formSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(2000),
-  status: z.enum(["lost", "found"]),
+const formSchema = createItemSchema.pick({
+  title: true,
+  description: true,
+  status: true,
 });
 
 interface PostItemFormProps {

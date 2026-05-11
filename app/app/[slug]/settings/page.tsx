@@ -18,8 +18,14 @@ export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
 
-async function MembersContent({ organizationId }: { organizationId: string }) {
-  const members = await getOrganizationMembers(organizationId);
+async function MembersContent({
+  organizationId,
+  userId,
+}: {
+  organizationId: string;
+  userId: string;
+}) {
+  const members = await getOrganizationMembers(organizationId, userId);
 
   return (
     <div className="space-y-6">
@@ -101,7 +107,10 @@ export default async function MembersPage({ params }: { params: Params }) {
           />
         )}
 
-        <MembersContent organizationId={organization.id} />
+        <MembersContent
+          organizationId={organization.id}
+          userId={session.user.id}
+        />
       </div>
     </div>
   );

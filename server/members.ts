@@ -5,11 +5,12 @@ import { and, eq, inArray } from "drizzle-orm";
 import { Resend } from "resend";
 import OrganizationInvitationEmail from "@/components/emails/organization-invitation";
 import { db } from "@/db/drizzle";
-import type { Member } from "@/db/schema";
+import type { Member, User } from "@/db/schema";
 import { invitation, member, organization, type Role, user } from "@/db/schema";
 import type { ActionResult } from "@/lib/action-response";
 import { getEnv } from "@/lib/env";
 import { getSession } from "@/lib/get-session";
+import { isOrgAdmin } from "./permissions";
 
 const resend = new Resend(getEnv("RESEND_API_KEY"));
 
@@ -157,6 +158,22 @@ export const removeMember = async (
       };
     }
 
+    if (memberRecord.role === "owner") {
+      const owners = await db.query.member.findMany({
+        where: and(
+          eq(member.organizationId, memberRecord.organizationId),
+          eq(member.role, "owner")
+        ),
+      });
+
+      if (owners.length <= 1) {
+        return {
+          success: false,
+          error: "Cannot remove the last owner of the organization.",
+        };
+      }
+    }
+
     await db.delete(member).where(eq(member.id, memberId));
 
     return {
@@ -172,9 +189,16 @@ export const removeMember = async (
 };
 
 export const getOrganizationMembers = async (
-  organizationId: string
-): Promise<Member[]> => {
+  organizationId: string,
+  userId?: string
+): Promise<Array<Member & { user: User }>> => {
   try {
+    const isAdmin = await isOrgAdmin(organizationId, userId);
+
+    if (!isAdmin) {
+      return [];
+    }
+
     const members = await db.query.member.findMany({
       where: eq(member.organizationId, organizationId),
       with: {

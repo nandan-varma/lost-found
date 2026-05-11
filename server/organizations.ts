@@ -5,7 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { db } from "@/db/drizzle";
-import type { Organization } from "@/db/schema";
+import type { Member, Organization, User } from "@/db/schema";
 import { member, organization } from "@/db/schema";
 import type { ActionResult } from "@/lib/action-response";
 import { auth } from "@/lib/auth";
@@ -14,9 +14,9 @@ import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
 
-type OrganizationWithMembers = NonNullable<
-  Awaited<ReturnType<typeof db.query.organization.findFirst>>
->;
+type OrganizationWithMembers = Organization & {
+  members: Array<Member & { user: User }>;
+};
 type OrganizationBySlugResult = OrganizationWithMembers & { isAdmin: boolean };
 
 export async function getOrganizations(
@@ -64,22 +64,18 @@ export async function getActiveOrganization(
       where: eq(organization.id, memberUser.organizationId),
     });
 
-    return activeOrganization;
+    return activeOrganization ?? null;
   } catch {
     return null;
   }
 }
 
-export async function getAllOrganizations(
-  userId?: string
-): Promise<Organization[]> {
+export async function getAllOrganizations(): Promise<Organization[]> {
   try {
-    if (!userId) {
-      const session = await getSession();
+    const session = await getSession();
 
-      if (!session) {
-        return [];
-      }
+    if (!session) {
+      return [];
     }
 
     const organizations = await db.query.organization.findMany();
@@ -161,7 +157,7 @@ export async function createOrganization(
       };
     }
 
-    const domain = session.user.email.split("@")[1];
+    const domain = session.user.email.split("@")[1]?.toLowerCase();
 
     const org = await auth.api.createOrganization({
       body: { name: parsed.data.name, slug: parsed.data.slug },
@@ -183,11 +179,12 @@ export async function findOrgByDomain(
   domain: string
 ): Promise<Organization | null> {
   try {
+    const normalizedDomain = domain.toLowerCase();
     const org = await db.query.organization.findFirst({
-      where: eq(organization.domain, domain),
+      where: eq(organization.domain, normalizedDomain),
     });
 
-    return org;
+    return org ?? null;
   } catch {
     return null;
   }
@@ -216,7 +213,9 @@ export async function updateOrganizationDomain(
       };
     }
 
-    const cleanDomain = parsedDomain.data || null;
+    const cleanDomain = parsedDomain.data
+      ? parsedDomain.data.toLowerCase()
+      : null;
 
     if (cleanDomain) {
       const existing = await db.query.organization.findFirst({
