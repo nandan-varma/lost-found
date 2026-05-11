@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { member, type Role, user } from "@/db/schema";
 import { isOrgAdmin } from "./permissions";
@@ -12,9 +12,23 @@ export const inviteMember = async (
   role: Role = "member"
 ) => {
   try {
-    const admin = await isOrgAdmin(organizationId);
+    const session = await import("@/lib/get-session").then((m) =>
+      m.getSession()
+    );
 
-    if (!admin) {
+    if (!session?.user?.id) {
+      throw new Error("You must be logged in to invite members");
+    }
+
+    const membership = await db.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, organizationId),
+        eq(member.userId, session.user.id),
+        inArray(member.role, ["admin", "owner"])
+      ),
+    });
+
+    if (!membership) {
       throw new Error(
         "You are not allowed to invite users to this organization"
       );
