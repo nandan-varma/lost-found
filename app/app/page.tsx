@@ -1,4 +1,4 @@
-import { Building2 } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import dynamicImport from "next/dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -59,7 +59,7 @@ export default async function Dashboard({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:py-12">
+    <div className="mx-auto max-w-6xl space-y-8 px-4">
       <div className="space-y-2">
         <h1 className="font-bold text-3xl">Dashboard</h1>
         <p className="text-muted-foreground text-sm">
@@ -85,6 +85,14 @@ export default async function Dashboard({
               </div>
             </Link>
           ))}
+          <Button asChild className="h-full min-h-[80px]" variant="outline">
+            <Link href="/app?create=true">
+              <div className="flex flex-col items-center gap-2">
+                <Plus className="size-5" />
+                <span className="text-sm">Add Organization</span>
+              </div>
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-dashed bg-muted/30 py-12 text-center sm:py-16">
@@ -97,12 +105,6 @@ export default async function Dashboard({
             <CreateOrganizationDialog defaultOpen={!!create} />
             <JoinOrganizationDialog organizations={allOrganizations} />
           </div>
-        </div>
-      )}
-
-      {organizations.length > 0 && (
-        <div className="border-t pt-8">
-          <CreateOrganizationDialog defaultOpen={!!create} variant="outline" />
         </div>
       )}
     </div>

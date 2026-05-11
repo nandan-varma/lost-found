@@ -20,7 +20,7 @@ export default async function OrganizationLayout({
   const isAdmin = orgData?.isAdmin ?? false;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-20 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-6">
       <OrgBreadcrumb
         isAdmin={isAdmin}
         organizationName={orgData?.name ?? slug}

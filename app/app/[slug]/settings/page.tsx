@@ -1,10 +1,13 @@
 import { and, eq } from "drizzle-orm";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import AllUsers from "@/components/all-users";
 import { SetDomainForm } from "@/components/forms/set-domain-form";
 import MembersTable from "@/components/members-table";
 import { MembersTableSkeleton } from "@/components/skeletons";
+import { Button } from "@/components/ui/button";
 import { db } from "@/db/drizzle";
 import { member } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
@@ -79,27 +82,42 @@ export default async function MembersPage({ params }: { params: Params }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:py-12">
-      <div className="space-y-2">
-        <h1 className="font-bold text-3xl">Settings</h1>
-        <p className="text-muted-foreground text-sm">
-          Manage members and organization settings
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <Button
+          asChild
+          className="-ml-3 text-muted-foreground"
+          size="sm"
+          variant="ghost"
+        >
+          <Link href={`/app/${slug}`}>
+            <ArrowLeft className="mr-1 size-4" />
+            <span className="sr-only sm:not-sr-only">Items</span>
+          </Link>
+        </Button>
       </div>
+      <div className="max-w-3xl space-y-8">
+        <div className="space-y-2">
+          <h1 className="font-bold text-3xl">Settings</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage members and organization settings
+          </p>
+        </div>
 
-      {isAdmin && organization && (
-        <SetDomainForm
-          currentDomain={organization.domain ?? null}
-          orgId={organization.id}
-        />
-      )}
+        {isAdmin && organization && (
+          <SetDomainForm
+            currentDomain={organization.domain ?? null}
+            orgId={organization.id}
+          />
+        )}
 
-      <Suspense fallback={<MembersTableSkeleton />}>
-        <MembersContent
-          organizationId={organization.id}
-          userId={session.user.id}
-        />
-      </Suspense>
+        <Suspense fallback={<MembersTableSkeleton />}>
+          <MembersContent
+            organizationId={organization.id}
+            userId={session.user.id}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }
