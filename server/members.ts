@@ -10,6 +10,7 @@ import { invitation, member, organization, type Role, user } from "@/db/schema";
 import type { ActionResult } from "@/lib/action-response";
 import { getEnv } from "@/lib/env";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 import { isOrgAdmin } from "./permissions";
 
 const resend = new Resend(getEnv("RESEND_API_KEY"));
@@ -121,7 +122,8 @@ export const inviteMember = async (
       success: true,
       data: `Invitation sent to ${normalizedEmail}`,
     };
-  } catch {
+  } catch (error) {
+    logger.error("inviteMember failed", { error, organizationId, email });
     return {
       success: false,
       error: "Failed to invite member",
@@ -190,7 +192,8 @@ export const removeMember = async (
       success: true,
       data: null,
     };
-  } catch {
+  } catch (error) {
+    logger.error("removeMember failed", { error, memberId });
     return {
       success: false,
       error: "Failed to remove member.",
@@ -217,7 +220,8 @@ export const getOrganizationMembers = async (
     });
 
     return members;
-  } catch {
+  } catch (error) {
+    logger.error("getOrganizationMembers failed", { error, organizationId });
     throw new Error("Failed to fetch organization members.");
   }
 };

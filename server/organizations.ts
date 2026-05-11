@@ -10,6 +10,7 @@ import { member, organization } from "@/db/schema";
 import type { ActionResult } from "@/lib/action-response";
 import { auth } from "@/lib/auth";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 import { createOrganizationSchema, domainSchema } from "@/lib/validations";
 import { isOrgAdmin } from "./permissions";
 import { getCurrentUser } from "./users";
@@ -65,7 +66,8 @@ export async function getActiveOrganization(
     });
 
     return activeOrganization ?? null;
-  } catch {
+  } catch (error) {
+    logger.error("getActiveOrganization failed", { error, userId });
     return null;
   }
 }
@@ -95,7 +97,8 @@ export async function getAllOrganizations(): Promise<Organization[]> {
     });
 
     return organizations.filter((org) => !memberOrgIds.includes(org.id));
-  } catch {
+  } catch (error) {
+    logger.error("getAllOrganizations failed", { error });
     return [];
   }
 }
@@ -156,7 +159,8 @@ export async function joinOrganization(
     });
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("joinOrganization failed", { error, orgId });
     return { success: false, error: "Failed to join organization" };
   }
 }
@@ -205,7 +209,8 @@ export async function createOrganization(
       .where(eq(organization.id, org.id));
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("createOrganization failed", { error, name, slug });
     return { success: false, error: "Failed to create organization" };
   }
 }
@@ -220,7 +225,8 @@ export async function findOrgByDomain(
     });
 
     return org ?? null;
-  } catch {
+  } catch (error) {
+    logger.error("findOrgByDomain failed", { error, domain });
     return null;
   }
 }
@@ -271,7 +277,8 @@ export async function updateOrganizationDomain(
       .where(eq(organization.id, orgId));
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("updateOrganizationDomain failed", { error, orgId, domain });
     return { success: false, error: "Failed to update domain" };
   }
 }
@@ -331,7 +338,8 @@ export const getOrganizationBySlug = cache(
         ...(organizationBySlug as OrganizationWithMembers),
         isAdmin: true,
       };
-    } catch {
+    } catch (error) {
+      logger.error("getOrganizationBySlug failed", { error, slug });
       return null;
     }
   }

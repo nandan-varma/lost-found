@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ interface SessionEntry {
 }
 
 export function SessionManager() {
+  const router = useRouter();
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
   const [currentToken, setCurrentToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,7 +103,13 @@ export function SessionManager() {
 
     try {
       await authClient.revokeSessions();
-      await authClient.signOut();
+      setSessions([]);
+      setCurrentToken(null);
+      toast.success("All sessions revoked. Signing you out...");
+
+      await authClient.signOut().catch(() => undefined);
+      router.replace("/login");
+      router.refresh();
       return;
     } catch {
       toast.error("Unable to revoke sessions");

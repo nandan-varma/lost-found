@@ -5,6 +5,7 @@ import { db } from "@/db/drizzle";
 import type { User } from "@/db/schema";
 import { member, user } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 import { isOrgAdmin } from "./permissions";
 
 type SessionData = NonNullable<Awaited<ReturnType<typeof getSession>>>;
@@ -63,7 +64,8 @@ export const getUsers = async (
     });
 
     return users;
-  } catch {
+  } catch (error) {
+    logger.error("getUsers failed", { error, organizationId });
     return [];
   }
 };
@@ -107,7 +109,8 @@ export const searchUsers = async (
     });
 
     return users.filter((u) => !memberUserIds.includes(u.id));
-  } catch {
+  } catch (error) {
+    logger.error("searchUsers failed", { error, organizationId });
     return [];
   }
 };

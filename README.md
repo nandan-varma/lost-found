@@ -22,3 +22,7 @@ run the development server:
 ```bash
 pnpm dev
 ```
+
+# Env Variables
+
+see `.env.example` and fill in those env vars

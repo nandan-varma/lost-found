@@ -16,6 +16,7 @@ import {
 import type { ActionResult } from "@/lib/action-response";
 import { MAX_ITEM_IMAGES } from "@/lib/constants";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 import { deleteFile, uploadFile } from "@/lib/r2";
 import { claimItemSchema, createItemSchema } from "@/lib/validations";
 import { isItemOwnerOrAdmin, isOrgMember } from "./permissions";
@@ -172,7 +173,12 @@ export async function createItem(
       success: true,
       data: created,
     };
-  } catch {
+  } catch (error) {
+    logger.error("createItem failed", {
+      error,
+      organizationId: parsed.data.organizationId,
+      userId: session.user.id,
+    });
     for (const key of uploadedKeys) {
       try {
         await deleteFile(key);
@@ -245,7 +251,8 @@ export async function updateItemStatus(
       .where(eq(item.id, itemId));
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("updateItemStatus failed", { error, itemId, newStatus });
     return { success: false, error: "Failed to update item." };
   }
 }
@@ -320,7 +327,12 @@ export async function claimItem(
     });
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("claimItem failed", {
+      error,
+      itemId,
+      userId: session.user.id,
+    });
     return { success: false, error: "Failed to claim item." };
   }
 }
@@ -366,7 +378,12 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
     );
 
     return { success: true, data: null };
-  } catch {
+  } catch (error) {
+    logger.error("deleteItem failed", {
+      error,
+      itemId,
+      userId: session.user.id,
+    });
     return { success: false, error: "Failed to delete item." };
   }
 }

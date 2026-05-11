@@ -231,7 +231,10 @@ export default async function Home() {
       <footer className="border-t px-6 py-8">
         <div className="mx-auto flex max-w-6xl items-center justify-between text-muted-foreground text-sm">
           <p>Lost and Found</p>
-          <p>Built for organizations</p>
+          <div className="flex items-center gap-4">
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
+          </div>
         </div>
       </footer>
     </div>
