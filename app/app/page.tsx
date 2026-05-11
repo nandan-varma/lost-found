@@ -58,6 +58,46 @@ export default async function Dashboard({
     redirect(`/app/${organizations[0].slug}`);
   }
 
+  if (create) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-8 px-4">
+        <div className="space-y-2">
+          <h1 className="font-bold text-3xl">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">
+            Select an organization to manage lost and found items.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          {organizations.map((org) => (
+            <Link href={`/app/${org.slug}`} key={org.id}>
+              <div className="flex h-full items-center gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-md">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Building2 className="size-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{org.name}</p>
+                  <p className="truncate text-muted-foreground text-xs">
+                    {org.slug}
+                    {org.domain && ` \u00B7 ${org.domain}`}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+          <Button asChild className="h-full min-h-[80px]" variant="outline">
+            <Link href="/app?create=true">
+              <div className="flex flex-col items-center gap-2">
+                <Plus className="size-5" />
+                <span className="text-sm">Add Organization</span>
+              </div>
+            </Link>
+          </Button>
+        </div>
+        <CreateOrganizationDialog defaultOpen={true} />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4">
       <div className="space-y-2">
