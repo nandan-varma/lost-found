@@ -70,7 +70,11 @@ export function ItemDetail({
             <CardTitle>Claim This Item</CardTitle>
           </CardHeader>
           <CardContent>
-            <ClaimForm itemId={i.id} organizationSlug={organizationSlug} />
+            <ClaimForm
+              itemId={i.id}
+              organizationId={organizationId}
+              organizationSlug={organizationSlug}
+            />
           </CardContent>
         </Card>
       )}

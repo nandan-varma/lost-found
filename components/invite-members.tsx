@@ -39,13 +39,6 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
     },
     onSuccess: (message) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.members.all(organizationId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.users.searchResults(organizationId),
-      });
-      router.refresh();
     },
     onError: (error) => {
       toast.error(error.message || "Failed to invite member");
@@ -169,11 +162,29 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
 
       <Button
         disabled={emails.length === 0 || mutation.isPending}
-        onClick={() => {
-          for (const email of emails) {
-            mutation.mutate(email);
+        onClick={async () => {
+          const emailBatch = [...emails];
+          const results = await Promise.allSettled(
+            emailBatch.map((email) => mutation.mutateAsync(email))
+          );
+
+          const successCount = results.filter(
+            (result) => result.status === "fulfilled"
+          ).length;
+
+          if (successCount > 0) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.members.all(organizationId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.users.searchResults(organizationId),
+            });
+            router.refresh();
           }
-          setEmails([]);
+
+          setEmails((prev) =>
+            prev.filter((email) => !emailBatch.includes(email))
+          );
         }}
         size="sm"
       >

@@ -78,8 +78,23 @@ export async function getAllOrganizations(): Promise<Organization[]> {
       return [];
     }
 
-    const organizations = await db.query.organization.findMany();
-    return organizations;
+    const emailDomain = session.user.email.split("@")[1]?.toLowerCase();
+
+    if (!emailDomain) {
+      return [];
+    }
+
+    const memberships = await db.query.member.findMany({
+      where: eq(member.userId, session.user.id),
+    });
+
+    const memberOrgIds = memberships.map((m) => m.organizationId);
+
+    const organizations = await db.query.organization.findMany({
+      where: eq(organization.domain, emailDomain),
+    });
+
+    return organizations.filter((org) => !memberOrgIds.includes(org.id));
   } catch {
     return [];
   }
@@ -96,6 +111,26 @@ export async function joinOrganization(
     }
 
     const { currentUser } = sessionData;
+
+    const targetOrg = await db.query.organization.findFirst({
+      where: eq(organization.id, orgId),
+    });
+
+    if (!targetOrg) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    const emailDomain = currentUser.email.split("@")[1]?.toLowerCase();
+
+    if (
+      !(emailDomain && targetOrg.domain) ||
+      targetOrg.domain !== emailDomain
+    ) {
+      return {
+        success: false,
+        error: "You are not eligible to join this organization",
+      };
+    }
 
     const existing = await db.query.member.findFirst({
       where: (fields, { eq, and }) =>

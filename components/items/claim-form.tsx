@@ -24,10 +24,15 @@ import { claimItem } from "@/server/items";
 
 interface ClaimFormProps {
   itemId: string;
+  organizationId: string;
   organizationSlug: string;
 }
 
-export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
+export function ClaimForm({
+  itemId,
+  organizationId,
+  organizationSlug,
+}: ClaimFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -48,6 +53,9 @@ export function ClaimForm({ itemId, organizationSlug }: ClaimFormProps) {
         toast.success("Item claimed successfully");
         queryClient.invalidateQueries({
           queryKey: queryKeys.items.detail(itemId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.items.all(organizationId),
         });
         router.push(`/app/${organizationSlug}/items/${itemId}`);
       } else {

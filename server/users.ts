@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, ilike, inArray, not, or } from "drizzle-orm";
+import { and, eq, ilike, inArray, not, or } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import type { User } from "@/db/schema";
 import { member, user } from "@/db/schema";
@@ -39,16 +39,26 @@ export const getUsers = async (
       return [];
     }
 
+    const session = await getSession();
+    const requesterDomain = session?.user.email.split("@")[1]?.toLowerCase();
+
+    if (!requesterDomain) {
+      return [];
+    }
+
     const members = await db.query.member.findMany({
       where: eq(member.organizationId, organizationId),
     });
 
     const users = await db.query.user.findMany({
-      where: not(
-        inArray(
-          user.id,
-          members.map((m) => m.userId)
-        )
+      where: and(
+        not(
+          inArray(
+            user.id,
+            members.map((m) => m.userId)
+          )
+        ),
+        ilike(user.email, `%@${requesterDomain}`)
       ),
     });
 
@@ -70,6 +80,13 @@ export const searchUsers = async (
       return [];
     }
 
+    const session = await getSession();
+    const requesterDomain = session?.user.email.split("@")[1]?.toLowerCase();
+
+    if (!requesterDomain) {
+      return [];
+    }
+
     const members = await db.query.member.findMany({
       where: eq(member.organizationId, organizationId),
     });
@@ -79,9 +96,12 @@ export const searchUsers = async (
     const searchQuery = query.slice(0, 100);
 
     const users = await db.query.user.findMany({
-      where: or(
-        ilike(user.email, `%${searchQuery}%`),
-        ilike(user.name, `%${searchQuery}%`)
+      where: and(
+        or(
+          ilike(user.email, `%${searchQuery}%`),
+          ilike(user.name, `%${searchQuery}%`)
+        ),
+        ilike(user.email, `%@${requesterDomain}`)
       ),
       limit: 10,
     });

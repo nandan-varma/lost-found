@@ -32,6 +32,17 @@ async function getOrganization(id: string) {
   return orgs[0] || null;
 }
 
+function isInvitationValid(invitation: {
+  status: string;
+  expiresAt: Date | string;
+}) {
+  if (invitation.status !== "pending") {
+    return false;
+  }
+
+  return new Date(invitation.expiresAt) >= new Date();
+}
+
 export default async function AcceptInvitationPage({
   params,
 }: {
@@ -109,25 +120,19 @@ export default async function AcceptInvitationPage({
             You&apos;re logged in as <strong>{session.user.email}</strong>
           </p>
           <p className="mb-6 text-center text-muted-foreground">
-            This invitation is for <strong>{invitation.email}</strong>. Would
-            you still like to accept it?
+            This invitation is for <strong>{invitation.email}</strong>. Sign in
+            with that email to accept it.
           </p>
-          <form
-            action={async () => {
-              "use server";
-              await acceptInvitationAsUser(
-                invitationId,
-                session.user?.id ?? ""
-              );
-            }}
-          >
-            <Button type="submit">Accept as Current User</Button>
-          </form>
+          <Button asChild>
+            <Link href={`/login?invitation=${invitationId}`}>
+              Switch Account
+            </Link>
+          </Button>
         </div>
       );
     }
 
-    await acceptInvitationAsUser(invitationId, session.user.id);
+    await acceptInvitationAsUser(invitationId);
   }
 
   const existingUser = await db
@@ -175,44 +180,73 @@ export default async function AcceptInvitationPage({
   );
 }
 
-async function acceptInvitationAsUser(invitationId: string, userId: string) {
+async function acceptInvitationAsUser(invitationId: string) {
   "use server";
 
-  const invs = await db
-    .select()
-    .from(invitationTable)
-    .where(eq(invitationTable.id, invitationId));
-  const inv = invs[0];
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!inv || inv.status !== "pending") {
+  if (!(session?.user?.id && session.user.email)) {
+    throw new Error("Not authenticated");
+  }
+
+  const invitationRecord = await db.query.invitation.findFirst({
+    where: eq(invitationTable.id, invitationId),
+  });
+
+  if (!invitationRecord) {
+    throw new Error("Invitation not found");
+  }
+
+  const org = await db.query.organization.findFirst({
+    where: eq(organization.id, invitationRecord.organizationId),
+  });
+
+  if (!org) {
+    throw new Error("Organization not found");
+  }
+
+  if (!isInvitationValid(invitationRecord)) {
     throw new Error("Invalid or expired invitation");
   }
 
-  const orgs = await db
-    .select()
-    .from(organization)
-    .where(eq(organization.id, inv.organizationId));
-  const org = orgs[0];
+  if (
+    invitationRecord.email.trim().toLowerCase() !==
+    session.user.email.trim().toLowerCase()
+  ) {
+    throw new Error("Invitation email does not match current account");
+  }
+
+  const role =
+    invitationRecord.role === "admin" || invitationRecord.role === "owner"
+      ? invitationRecord.role
+      : "member";
 
   await db.transaction(async (tx) => {
     const existingMembership = await tx.query.member.findFirst({
       where: and(
-        eq(member.organizationId, inv.organizationId),
-        eq(member.userId, userId)
+        eq(member.organizationId, invitationRecord.organizationId),
+        eq(member.userId, session.user.id)
       ),
     });
 
-    if (!existingMembership) {
-      await tx.insert(member).values({
-        id: randomUUID(),
-        organizationId: inv.organizationId,
-        userId,
-        role: (inv.role as "member" | "admin" | "owner") ?? "member",
-        createdAt: new Date(),
-      });
+    if (existingMembership) {
+      if (invitationRecord.status === "pending") {
+        await tx
+          .update(invitationTable)
+          .set({ status: "accepted" })
+          .where(
+            and(
+              eq(invitationTable.id, invitationId),
+              eq(invitationTable.status, "pending")
+            )
+          );
+      }
+      return;
     }
 
-    await tx
+    const [updatedInvite] = await tx
       .update(invitationTable)
       .set({ status: "accepted" })
       .where(
@@ -220,8 +254,21 @@ async function acceptInvitationAsUser(invitationId: string, userId: string) {
           eq(invitationTable.id, invitationId),
           eq(invitationTable.status, "pending")
         )
-      );
+      )
+      .returning({ id: invitationTable.id });
+
+    if (!updatedInvite) {
+      throw new Error("Invalid or expired invitation");
+    }
+
+    await tx.insert(member).values({
+      id: randomUUID(),
+      organizationId: invitationRecord.organizationId,
+      userId: session.user.id,
+      role,
+      createdAt: new Date(),
+    });
   });
 
-  redirect(`/app/${org?.slug}`);
+  redirect(`/app/${org.slug}`);
 }

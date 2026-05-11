@@ -30,8 +30,8 @@ async function ItemDetailContent({
   }
 
   const [item, isOwnerOrAdmin] = await Promise.all([
-    getItem(itemId, session.user.id),
-    isItemOwnerOrAdmin(itemId, session.user.id),
+    getItem(itemId),
+    isItemOwnerOrAdmin(itemId),
   ]);
 
   if (!item) {

@@ -31,10 +31,9 @@ type ItemDetailResult =
 
 export async function getItems(
   organizationId: string,
-  status?: ItemStatus,
-  userId?: string
+  status?: ItemStatus
 ): Promise<ItemListResult[]> {
-  const member = await isOrgMember(organizationId, userId);
+  const member = await isOrgMember(organizationId);
 
   if (!member) {
     return [];
@@ -58,10 +57,7 @@ export async function getItems(
   return items;
 }
 
-export async function getItem(
-  itemId: string,
-  userId?: string
-): Promise<ItemDetailResult> {
+export async function getItem(itemId: string): Promise<ItemDetailResult> {
   const itemRecord = await db.query.item.findFirst({
     where: eq(item.id, itemId),
     with: {
@@ -75,7 +71,7 @@ export async function getItem(
     return null;
   }
 
-  const member = await isOrgMember(itemRecord.organizationId, userId);
+  const member = await isOrgMember(itemRecord.organizationId);
 
   if (!member) {
     return null;
@@ -128,7 +124,7 @@ export async function createItem(
     return { success: false, error: "Not authenticated" };
   }
 
-  const member = await isOrgMember(parsed.data.organizationId, session.user.id);
+  const member = await isOrgMember(parsed.data.organizationId);
 
   if (!member) {
     return { success: false, error: "Not a member of this organization" };
@@ -210,11 +206,7 @@ export async function updateItemStatus(
     return { success: false, error: "Item not found." };
   }
 
-  const authorized = await isItemOwnerOrAdmin(
-    itemId,
-    session.user.id,
-    itemRecord
-  );
+  const authorized = await isItemOwnerOrAdmin(itemId, undefined, itemRecord);
 
   if (!authorized) {
     return {
@@ -303,7 +295,7 @@ export async function claimItem(
     };
   }
 
-  const member = await isOrgMember(itemRecord.organizationId, session.user.id);
+  const member = await isOrgMember(itemRecord.organizationId);
 
   if (!member) {
     return {
@@ -351,11 +343,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
     return { success: false, error: "Item not found." };
   }
 
-  const authorized = await isItemOwnerOrAdmin(
-    itemId,
-    session.user.id,
-    itemRecord
-  );
+  const authorized = await isItemOwnerOrAdmin(itemId, undefined, itemRecord);
 
   if (!authorized) {
     return {

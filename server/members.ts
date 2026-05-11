@@ -20,6 +20,16 @@ export const inviteMember = async (
   role: Role = "member"
 ): Promise<ActionResult<string>> => {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
+    const allowedRoles: Role[] = ["member", "admin"];
+
+    if (!allowedRoles.includes(role)) {
+      return {
+        success: false,
+        error: "Invalid role for invitation",
+      };
+    }
+
     const session = await getSession();
 
     if (!session?.user) {
@@ -45,7 +55,7 @@ export const inviteMember = async (
     }
 
     const existingUser = await db.query.user.findFirst({
-      where: eq(user.email, email),
+      where: eq(user.email, normalizedEmail),
     });
 
     if (existingUser) {
@@ -73,7 +83,7 @@ export const inviteMember = async (
 
       return {
         success: true,
-        data: `${existingUser.name || email} added as member`,
+        data: `${existingUser.name || normalizedEmail} added as member`,
       };
     }
 
@@ -84,7 +94,7 @@ export const inviteMember = async (
     const invId = randomUUID();
     await db.insert(invitation).values({
       id: invId,
-      email,
+      email: normalizedEmail,
       organizationId,
       role,
       status: "pending",
@@ -92,14 +102,14 @@ export const inviteMember = async (
       inviterId: session.user.id,
     });
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${invId}`;
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invId}`;
 
     await resend.emails.send({
       from: `${process.env.EMAIL_SENDER_NAME} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-      to: email,
+      to: normalizedEmail,
       subject: `You've been invited to join ${org?.name} on Lost and Found`,
       react: OrganizationInvitationEmail({
-        email,
+        email: normalizedEmail,
         invitedByUsername: session.user.name || "Someone",
         invitedByEmail: session.user.email || "",
         teamName: org?.name || "the organization",
@@ -109,7 +119,7 @@ export const inviteMember = async (
 
     return {
       success: true,
-      data: `Invitation sent to ${email}`,
+      data: `Invitation sent to ${normalizedEmail}`,
     };
   } catch {
     return {

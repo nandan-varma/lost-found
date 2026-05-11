@@ -6,12 +6,17 @@ import { item, member } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
 
 async function resolveUserId(userId?: string) {
-  if (userId) {
-    return userId;
+  const session = await getSession();
+
+  if (!session?.user.id) {
+    return null;
   }
 
-  const session = await getSession();
-  return session?.user.id ?? null;
+  if (userId && userId !== session.user.id) {
+    return null;
+  }
+
+  return session.user.id;
 }
 
 export const isOrgAdmin = async (
