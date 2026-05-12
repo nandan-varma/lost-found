@@ -105,9 +105,9 @@ export const inviteMember = async (
 
     const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invId}`;
 
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: `${process.env.EMAIL_SENDER_NAME} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-      to: normalizedEmail,
+      to: [normalizedEmail],
       subject: `You've been invited to join ${org?.name} on Lost and Found`,
       react: OrganizationInvitationEmail({
         email: normalizedEmail,
@@ -116,6 +116,19 @@ export const inviteMember = async (
         teamName: org?.name || "the organization",
         inviteLink,
       }),
+    });
+
+    if (error) {
+      logger.error("Email send failed", { error, to: normalizedEmail });
+      return {
+        success: false,
+        error: "Failed to send invitation email",
+      };
+    }
+
+    logger.info("Invitation email sent", {
+      emailId: data?.id,
+      to: normalizedEmail,
     });
 
     return {
