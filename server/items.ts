@@ -111,6 +111,7 @@ export async function createItem(
 
   if (!parsed.success) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
+    logger.warn("createItem validation failed", { fieldErrors });
     const messages = Object.entries(fieldErrors)
       .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
       .join("; ");
@@ -131,6 +132,14 @@ export async function createItem(
     };
   }
 
+  logger.info("createItem received", {
+    title,
+    description,
+    status,
+    organizationId,
+    imageCount: imageFiles.length,
+  });
+
   const session = await getSession();
 
   if (!session) {
@@ -138,6 +147,12 @@ export async function createItem(
   }
 
   const member = await isOrgMember(parsed.data.organizationId);
+
+  logger.info("createItem auth check", {
+    userId: session.user.id,
+    organizationId: parsed.data.organizationId,
+    isMember: member,
+  });
 
   if (!member) {
     return { success: false, error: "Not a member of this organization" };
@@ -185,6 +200,8 @@ export async function createItem(
   } catch (error) {
     logger.error("createItem failed", {
       error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       organizationId: parsed.data.organizationId,
       userId: session.user.id,
     });

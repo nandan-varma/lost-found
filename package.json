@@ -6,6 +6,7 @@
     "@react-email/components": "^1.0.12",
     "@tanstack/react-query": "^5.100.9",
     "better-auth": "^1.6.10",
+    "bufferutil": "^4.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
@@ -20,6 +21,7 @@
     "resend": "^6.12.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
+    "ws": "^8.20.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -28,6 +30,7 @@
     "@types/node": "^25.6.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.10",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.0",
