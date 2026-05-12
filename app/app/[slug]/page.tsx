@@ -73,8 +73,7 @@ export default async function OrganizationItemsPage({
   params: Params;
   searchParams: Promise<{ status?: string }>;
 }) {
-  const { slug } = await params;
-  const { status } = await searchParams;
+  const [{ slug }, { status }] = await Promise.all([params, searchParams]);
 
   return (
     <Suspense fallback={<ItemListSkeleton />}>

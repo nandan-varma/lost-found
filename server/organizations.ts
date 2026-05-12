@@ -23,17 +23,12 @@ type OrganizationBySlugResult = OrganizationWithMembers & { isAdmin: boolean };
 export async function getOrganizations(
   userId?: string
 ): Promise<Organization[]> {
-  let resolvedUserId = userId;
-
-  if (!resolvedUserId) {
-    const sessionData = await getCurrentUser();
-
-    if (!sessionData) {
-      return [];
-    }
-
-    resolvedUserId = sessionData.currentUser.id;
+  const session = await getSession();
+  if (!session) {
+    return [];
   }
+
+  const resolvedUserId = userId || session.user.id;
 
   const members = await db.query.member.findMany({
     where: eq(member.userId, resolvedUserId),
@@ -52,6 +47,15 @@ export async function getOrganizations(
 export async function getActiveOrganization(
   userId: string
 ): Promise<Organization | null> {
+  const session = await getSession();
+  if (!session) {
+    return null;
+  }
+
+  if (session.user.id !== userId) {
+    return null;
+  }
+
   try {
     const memberUser = await db.query.member.findFirst({
       where: eq(member.userId, userId),
@@ -289,6 +293,9 @@ export const getOrganizationBySlug = cache(
     userId?: string
   ): Promise<OrganizationBySlugResult | null> => {
     try {
+      const session = await getSession();
+      const resolvedUserId = userId || session?.user.id;
+
       const organizationBySlug = await db.query.organization.findFirst({
         where: eq(organization.slug, slug),
         with: {
@@ -304,20 +311,12 @@ export const getOrganizationBySlug = cache(
         return null;
       }
 
-      let resolvedUserId = userId;
-
-      if (!resolvedUserId) {
-        const session = await getSession();
-
-        if (!session) {
-          return {
-            ...(organizationBySlug as OrganizationWithMembers),
-            members: [],
-            isAdmin: false,
-          };
-        }
-
-        resolvedUserId = session.user.id;
+      if (!session) {
+        return {
+          ...(organizationBySlug as OrganizationWithMembers),
+          members: [],
+          isAdmin: false,
+        };
       }
 
       const isAdmin = organizationBySlug.members.some(

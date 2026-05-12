@@ -46,7 +46,9 @@ export function ItemDetail({
             </h1>
             <p className="mt-1 text-muted-foreground text-sm">
               Posted by {i.user.name} &middot;{" "}
-              {new Date(i.createdAt).toLocaleDateString()}
+              <span suppressHydrationWarning>
+                {new Date(i.createdAt).toLocaleDateString()}
+              </span>
             </p>
           </div>
           <div className="shrink-0">
@@ -100,7 +102,9 @@ export function ItemDetail({
             )}
             <p>
               <span className="font-medium">Claimed on:</span>{" "}
-              {new Date(i.claim.createdAt).toLocaleDateString()}
+              <span suppressHydrationWarning>
+                {new Date(i.claim.createdAt).toLocaleDateString()}
+              </span>
             </p>
           </CardContent>
         </Card>

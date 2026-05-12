@@ -34,6 +34,12 @@ export async function getItems(
   organizationId: string,
   status?: ItemStatus
 ): Promise<ItemListResult[]> {
+  const session = await getSession();
+
+  if (!session) {
+    return [];
+  }
+
   const member = await isOrgMember(organizationId);
 
   if (!member) {
@@ -59,6 +65,12 @@ export async function getItems(
 }
 
 export async function getItem(itemId: string): Promise<ItemDetailResult> {
+  const session = await getSession();
+
+  if (!session) {
+    return null;
+  }
+
   const itemRecord = await db.query.item.findFirst({
     where: eq(item.id, itemId),
     with: {
@@ -135,13 +147,10 @@ export async function createItem(
 
   try {
     const newItemId = randomUUID();
-    const uploadedImages: { url: string; key: string }[] = [];
-
-    for (const file of imageFiles) {
-      const result = await uploadFile(file, `items/${newItemId}`);
-      uploadedKeys.push(result.key);
-      uploadedImages.push(result);
-    }
+    const uploadedImages = await Promise.all(
+      imageFiles.map((file) => uploadFile(file, `items/${newItemId}`))
+    );
+    uploadedKeys.push(...uploadedImages.map((image) => image.key));
 
     const created = await db.transaction(async (tx) => {
       const [newItem] = await tx
@@ -179,13 +188,7 @@ export async function createItem(
       organizationId: parsed.data.organizationId,
       userId: session.user.id,
     });
-    for (const key of uploadedKeys) {
-      try {
-        await deleteFile(key);
-      } catch {
-        // Ignore cleanup errors for failed uploads.
-      }
-    }
+    await Promise.allSettled(uploadedKeys.map((key) => deleteFile(key)));
 
     return {
       success: false,

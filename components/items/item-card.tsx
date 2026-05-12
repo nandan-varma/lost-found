@@ -46,7 +46,9 @@ export function ItemCard({
           </p>
           <p className="text-muted-foreground text-xs">
             Posted by {i.user.name} &middot;{" "}
-            {new Date(i.createdAt).toLocaleDateString()}
+            <span suppressHydrationWarning>
+              {new Date(i.createdAt).toLocaleDateString()}
+            </span>
           </p>
         </CardContent>
       </Card>

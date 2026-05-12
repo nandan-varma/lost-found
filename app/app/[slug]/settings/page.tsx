@@ -60,24 +60,32 @@ async function MembersContent({
 export default async function MembersPage({ params }: { params: Params }) {
   const { slug } = await params;
 
-  const session = await getSession();
+  const [session, organizationData] = await Promise.all([
+    getSession(),
+    getOrganizationBySlug(slug, undefined).catch(() => null),
+  ]);
 
   if (!session) {
     redirect("/login");
   }
 
-  const organization = await getOrganizationBySlug(slug, session.user.id);
+  const organization =
+    organizationData && session.user.id
+      ? await getOrganizationBySlug(slug, session.user.id)
+      : null;
 
   if (!organization) {
     redirect("/app");
   }
 
-  const currentMember = await db.query.member.findFirst({
-    where: and(
-      eq(member.organizationId, organization.id),
-      eq(member.userId, session.user.id)
-    ),
-  });
+  const [currentMember] = await Promise.all([
+    db.query.member.findFirst({
+      where: and(
+        eq(member.organizationId, organization.id),
+        eq(member.userId, session.user.id)
+      ),
+    }),
+  ]);
 
   const isAdmin =
     currentMember?.role === "admin" || currentMember?.role === "owner";

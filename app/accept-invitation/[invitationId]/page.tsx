@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { Building2, CheckCircle, LogIn, UserPlus, X } from "lucide-react";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import {
   organization,
   user,
 } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
 
 export const metadata: Metadata = {
   title: "Accept invitation",
@@ -112,9 +111,7 @@ export default async function AcceptInvitationPage({
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (session?.user) {
     const currentEmail = session.user.email?.toLowerCase();
@@ -192,9 +189,7 @@ export default async function AcceptInvitationPage({
 async function acceptInvitationAsUser(invitationId: string) {
   "use server";
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!(session?.user?.id && session.user.email)) {
     throw new Error("Not authenticated");

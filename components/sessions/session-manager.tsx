@@ -25,6 +25,10 @@ const RE_APPLE_DEVICE = /\b(iPhone|iPad|iPod)\b/i;
 const RE_MAC = /\bMacintosh\b|\bMac OS X\b/i;
 const RE_WINDOWS = /\bWindows\b/i;
 const RE_LINUX = /\bLinux\b/i;
+const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
 
 interface SessionEntry {
   createdAt: Date | string;
@@ -239,10 +243,7 @@ export function SessionManager() {
 }
 
 function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(date));
+  return DATE_FORMATTER.format(new Date(date));
 }
 
 function formatDeviceLabel(userAgent?: string | null): string {
