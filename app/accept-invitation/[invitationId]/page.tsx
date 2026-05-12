@@ -68,7 +68,7 @@ export default async function AcceptInvitationPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
         <X className="mb-4 size-12 text-destructive" />
-        <h1 className="mb-2 font-bold text-2xl">Invalid Invitation</h1>
+        <h1 className="mb-2 font-semibold text-2xl">Invalid Invitation</h1>
         <p className="mb-6 text-center text-muted-foreground">
           This invitation link is not valid or has been removed.
         </p>
@@ -83,7 +83,7 @@ export default async function AcceptInvitationPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
         <CheckCircle className="mb-4 size-12 text-green-600" />
-        <h1 className="mb-2 font-bold text-2xl">Already Accepted</h1>
+        <h1 className="mb-2 font-semibold text-2xl">Already Accepted</h1>
         <p className="mb-6 text-center text-muted-foreground">
           This invitation has already been accepted.
         </p>
@@ -100,7 +100,7 @@ export default async function AcceptInvitationPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
         <X className="mb-4 size-12 text-destructive" />
-        <h1 className="mb-2 font-bold text-2xl">Invitation Expired</h1>
+        <h1 className="mb-2 font-semibold text-2xl">Invitation Expired</h1>
         <p className="mb-6 text-center text-muted-foreground">
           This invitation link has expired. Please request a new invitation from
           your organization admin.
@@ -122,7 +122,7 @@ export default async function AcceptInvitationPage({
       return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4">
           <LogIn className="mb-4 size-12 text-yellow-600" />
-          <h1 className="mb-2 font-bold text-2xl">Welcome!</h1>
+          <h1 className="mb-2 font-semibold text-2xl">Welcome!</h1>
           <p className="mb-4 text-center text-muted-foreground">
             You&apos;re logged in as <strong>{session.user.email}</strong>
           </p>
@@ -152,7 +152,7 @@ export default async function AcceptInvitationPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
         <UserPlus className="mb-4 size-12 text-blue-600" />
-        <h1 className="mb-2 font-bold text-2xl">Create Your Account</h1>
+        <h1 className="mb-2 font-semibold text-2xl">Create Your Account</h1>
         <p className="mb-2 text-center text-muted-foreground">
           You&apos;ve been invited to join <strong>{org?.name}</strong>
         </p>
@@ -174,7 +174,7 @@ export default async function AcceptInvitationPage({
       <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-primary/10">
         <Building2 className="size-7 text-primary" />
       </div>
-      <h1 className="mb-2 font-bold text-2xl">Join {org?.name}</h1>
+      <h1 className="mb-2 font-semibold text-2xl">Join {org?.name}</h1>
       <p className="mb-6 text-center text-muted-foreground">
         You&apos;ve been invited to join this organization.
       </p>

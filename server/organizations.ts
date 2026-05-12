@@ -141,6 +141,12 @@ export async function getAllOrganizations(): Promise<Organization[]> {
 export async function joinOrganization(
   orgId: string
 ): Promise<ActionResult<null>> {
+  const session = await getSession();
+  if (!session) {
+    logger.warn("joinOrganization: not authenticated");
+    return { success: false, error: "Not authenticated" };
+  }
+
   try {
     const sessionData = await getCurrentUser();
 
@@ -296,6 +302,12 @@ export async function findOrgByDomain(
   domain: string
 ): Promise<Organization | null> {
   try {
+    const session = await getSession();
+    if (!session) {
+      logger.info("findOrgByDomain: no session");
+      return null;
+    }
+
     const normalizedDomain = domain.toLowerCase();
     const org = await db.query.organization.findFirst({
       where: eq(organization.domain, normalizedDomain),
@@ -312,6 +324,12 @@ export async function updateOrganizationDomain(
   orgId: string,
   domain: string
 ): Promise<ActionResult<null>> {
+  const session = await getSession();
+  if (!session) {
+    logger.warn("updateOrganizationDomain: not authenticated");
+    return { success: false, error: "Not authenticated" };
+  }
+
   try {
     logger.info("updateOrganizationDomain: attempt", { orgId, domain });
 

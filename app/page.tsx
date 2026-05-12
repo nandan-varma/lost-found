@@ -58,7 +58,7 @@ export default async function Home() {
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
           <Link
-            className="font-bold text-sm tracking-tight sm:text-base"
+            className="font-semibold text-sm tracking-tight sm:text-base"
             href="/"
           >
             Lost and Found
@@ -96,7 +96,7 @@ export default async function Home() {
             <span className="inline xs:hidden">Manage lost & found</span>
           </div>
 
-          <h1 className="max-w-3xl font-bold text-3xl tracking-tight sm:text-4xl md:text-6xl">
+          <h1 className="max-w-3xl font-semibold text-3xl tracking-tight sm:text-4xl md:text-6xl">
             Find what&apos;s lost.
             <br />
             Return what&apos;s found.
@@ -127,7 +127,7 @@ export default async function Home() {
 
         <section className="border-t bg-muted/30 px-4 py-12 sm:px-6 sm:py-16 md:py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight sm:text-3xl">
+            <h2 className="mb-2 text-center font-semibold text-2xl tracking-tight sm:text-3xl">
               How it works
             </h2>
             <p className="mb-8 text-center text-muted-foreground text-sm sm:mb-12">
@@ -173,7 +173,7 @@ export default async function Home() {
 
         <section className="px-4 py-12 sm:px-6 sm:py-16 md:py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-2 text-center font-bold text-2xl tracking-tight sm:text-3xl">
+            <h2 className="mb-2 text-center font-semibold text-2xl tracking-tight sm:text-3xl">
               Everything you need
             </h2>
             <p className="mb-8 text-center text-muted-foreground text-sm sm:mb-12">
@@ -201,7 +201,7 @@ export default async function Home() {
 
         <section className="border-t bg-muted/30 px-4 py-12 text-center sm:px-6 sm:py-16 md:py-24">
           <div className="mx-auto max-w-2xl space-y-4">
-            <h2 className="font-bold text-2xl tracking-tight sm:text-3xl">
+            <h2 className="font-semibold text-2xl tracking-tight sm:text-3xl">
               Ready to get started?
             </h2>
             <p className="text-muted-foreground text-sm">

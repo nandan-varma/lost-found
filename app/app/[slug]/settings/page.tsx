@@ -111,7 +111,7 @@ export default async function MembersPage({ params }: { params: Params }) {
       </div>
       <div className="max-w-3xl space-y-8">
         <div className="space-y-2">
-          <h1 className="font-bold text-3xl">Settings</h1>
+          <h1 className="font-semibold text-3xl">Settings</h1>
           <p className="text-muted-foreground text-sm">
             Manage members and organization settings
           </p>

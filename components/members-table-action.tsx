@@ -15,7 +15,7 @@ export default function MembersTableAction({
   memberId: string;
   organizationId: string;
 }) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -26,7 +26,7 @@ export default function MembersTableAction({
         queryClient.invalidateQueries({
           queryKey: queryKeys.members.all(organizationId),
         });
-        router.refresh();
+        refresh();
       } else {
         toast.error(result.error);
       }

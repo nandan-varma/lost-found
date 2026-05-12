@@ -17,7 +17,7 @@ export default function AppError({
         <FileSearch className="size-6 text-destructive" />
       </div>
       <div className="space-y-1">
-        <h1 className="font-bold text-2xl tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Something went wrong
         </h1>
         <p className="text-muted-foreground text-sm">

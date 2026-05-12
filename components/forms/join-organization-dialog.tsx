@@ -39,7 +39,7 @@ interface JoinOrganizationDialogProps {
 export function JoinOrganizationDialog({
   organizations,
 }: JoinOrganizationDialogProps) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string>();
@@ -54,7 +54,7 @@ export function JoinOrganizationDialog({
           queryKey: queryKeys.organizations.all(),
         });
         setOpen(false);
-        router.refresh();
+        refresh();
       } else {
         toast.error(result.error);
       }
@@ -87,7 +87,7 @@ export function JoinOrganizationDialog({
 
   function handleCreateSuccess() {
     setOpen(false);
-    router.refresh();
+    refresh();
   }
 
   return (

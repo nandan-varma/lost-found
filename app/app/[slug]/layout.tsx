@@ -1,5 +1,4 @@
 import { OrgBreadcrumb } from "@/components/items/org-breadcrumb";
-import { getSession } from "@/lib/get-session";
 import { getOrganizationBySlug } from "@/server/organizations";
 
 type Params = Promise<{ slug: string }>;
@@ -13,9 +12,7 @@ export default async function OrganizationLayout({
 }) {
   const { slug } = await params;
 
-  const session = await getSession();
-
-  const orgData = await getOrganizationBySlug(slug, session?.user.id);
+  const orgData = await getOrganizationBySlug(slug);
 
   const isAdmin = orgData?.isAdmin ?? false;
 

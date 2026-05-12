@@ -49,7 +49,7 @@ async function PostItemContent({
             <FileSearch className="size-5" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-bold text-3xl">Post an Item</h1>
+            <h1 className="font-semibold text-3xl">Post an Item</h1>
             <p className="text-muted-foreground text-sm">
               Report a lost or found item in {organizationName}
             </p>

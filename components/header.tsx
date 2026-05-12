@@ -29,7 +29,7 @@ export function Header({
   organizations,
   user,
 }: HeaderProps) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   const initials = user.name
     ?.split(" ")
@@ -40,7 +40,7 @@ export function Header({
 
   const handleLogout = async () => {
     await authClient.signOut();
-    router.push("/");
+    push("/");
   };
 
   return (

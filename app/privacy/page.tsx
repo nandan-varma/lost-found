@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-      <h1 className="font-bold text-3xl">Privacy Policy</h1>
+      <h1 className="font-semibold text-3xl">Privacy Policy</h1>
       <p className="text-muted-foreground text-sm">
         Lost and Found processes basic account details, organization membership,
         item listings, and claim information to operate the service.

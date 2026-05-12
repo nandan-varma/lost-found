@@ -24,11 +24,11 @@ export function OrganizationSwitcher({
   activeOrganizationId,
   organizations,
 }: OrganizationSwitcherProps) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   const handleChangeOrganization = async (organizationId: string) => {
     if (organizationId === CREATE_ORG_VALUE) {
-      router.push("/app?create=true");
+      push("/app?create=true");
       return;
     }
 
@@ -41,7 +41,7 @@ export function OrganizationSwitcher({
       organizationId,
     });
 
-    router.push(`/app/${org.slug}`);
+    push(`/app/${org.slug}`);
   };
 
   return (

@@ -44,7 +44,7 @@ export function PostItemForm({
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const previewUrlsRef = useRef(imagePreviews);
   previewUrlsRef.current = imagePreviews;
-  const router = useRouter();
+  const { push } = useRouter();
   const queryClient = useQueryClient();
 
   useEffect(
@@ -73,7 +73,7 @@ export function PostItemForm({
         queryClient.invalidateQueries({
           queryKey: queryKeys.items.all(organizationId),
         });
-        router.push(`/app/${organizationSlug}/items/${result.data.id}`);
+        push(`/app/${organizationSlug}/items/${result.data.id}`);
       } else {
         toast.error(result.error);
       }

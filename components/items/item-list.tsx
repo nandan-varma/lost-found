@@ -26,7 +26,7 @@ export function ItemList({
   organizationSlug,
   activeStatus,
 }: ItemListProps) {
-  const router = useRouter();
+  const { push } = useRouter();
   const baseHref = `/app/${organizationSlug}`;
 
   const { data: items } = useQuery({
@@ -41,9 +41,7 @@ export function ItemList({
       <div className="space-y-4 sm:space-y-6">
         <Tabs
           onValueChange={(value) =>
-            router.push(
-              value === "all" ? baseHref : `${baseHref}?status=${value}`
-            )
+            push(value === "all" ? baseHref : `${baseHref}?status=${value}`)
           }
           value={activeStatus ?? "all"}
         >

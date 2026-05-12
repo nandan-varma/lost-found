@@ -41,7 +41,7 @@ export function ItemDetail({
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="break-words font-bold text-2xl sm:text-3xl">
+            <h1 className="break-words font-semibold text-2xl sm:text-3xl">
               {i.title}
             </h1>
             <p className="mt-1 text-muted-foreground text-sm">

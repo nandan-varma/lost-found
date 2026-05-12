@@ -20,11 +20,10 @@ interface CreateOrganizationDialogProps {
 }
 
 export function CreateOrganizationDialog({
-  defaultOpen = false,
   variant = "default",
 }: CreateOrganizationDialogProps) {
-  const router = useRouter();
-  const [open, setOpen] = useState(defaultOpen);
+  const { refresh } = useRouter();
+  const [open, setOpen] = useState(false);
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -44,7 +43,7 @@ export function CreateOrganizationDialog({
         <CreateOrganizationForm
           onSuccess={() => {
             setOpen(false);
-            router.refresh();
+            refresh();
           }}
         />
       </DialogContent>

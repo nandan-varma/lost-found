@@ -39,7 +39,7 @@ interface SessionEntry {
 }
 
 export function SessionManager() {
-  const router = useRouter();
+  const { replace, refresh } = useRouter();
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
   const [currentToken, setCurrentToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,8 +112,8 @@ export function SessionManager() {
       toast.success("All sessions revoked. Signing you out...");
 
       await authClient.signOut().catch(() => undefined);
-      router.replace("/login");
-      router.refresh();
+      replace("/login");
+      refresh();
       return;
     } catch {
       toast.error("Unable to revoke sessions");
@@ -135,7 +135,7 @@ export function SessionManager() {
           </CardHeader>
           <CardContent>
             <div className="rounded-lg border border-dashed p-6 text-muted-foreground text-sm">
-              Loading sessions...
+              Loading sessions…
             </div>
           </CardContent>
         </Card>

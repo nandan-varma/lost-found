@@ -16,7 +16,7 @@ interface InviteMembersProps {
 }
 
 export function InviteMembers({ organizationId }: InviteMembersProps) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const queryClient = useQueryClient();
   const [emails, setEmails] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -179,7 +179,7 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
             queryClient.invalidateQueries({
               queryKey: queryKeys.users.searchResults(organizationId),
             });
-            router.refresh();
+            refresh();
           }
 
           setEmails((prev) =>
@@ -191,7 +191,7 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
         {mutation.isPending ? (
           <>
             <Loader2 className="mr-2 size-4 animate-spin" />
-            Sending...
+            Sending…
           </>
         ) : (
           <>

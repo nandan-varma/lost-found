@@ -25,7 +25,7 @@ interface SetDomainFormProps {
 
 export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
   const [domain, setDomain] = useState(currentDomain ?? "");
-  const router = useRouter();
+  const { refresh } = useRouter();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -37,7 +37,7 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.organizations.byId(orgId),
         });
-        router.refresh();
+        refresh();
       } else {
         toast.error(result.error);
       }

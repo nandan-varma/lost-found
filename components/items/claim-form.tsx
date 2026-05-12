@@ -33,7 +33,7 @@ export function ClaimForm({
   organizationId,
   organizationSlug,
 }: ClaimFormProps) {
-  const router = useRouter();
+  const { push } = useRouter();
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof claimItemSchema>>({
@@ -57,7 +57,7 @@ export function ClaimForm({
         queryClient.invalidateQueries({
           queryKey: queryKeys.items.all(organizationId),
         });
-        router.push(`/app/${organizationSlug}/items/${itemId}`);
+        push(`/app/${organizationSlug}/items/${itemId}`);
       } else {
         toast.error(result.error);
       }

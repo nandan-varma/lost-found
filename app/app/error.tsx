@@ -18,7 +18,7 @@ export default function DashboardError({
           <AlertTriangle className="size-6 text-destructive" />
         </div>
       </div>
-      <h1 className="mb-2 font-bold text-2xl">Dashboard error</h1>
+      <h1 className="mb-2 font-semibold text-2xl">Dashboard error</h1>
       <p className="mb-6 text-muted-foreground text-sm">
         {error.digest
           ? `Error reference: ${error.digest}`

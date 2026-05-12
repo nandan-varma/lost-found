@@ -67,7 +67,7 @@ export default async function Dashboard({
     return (
       <div className="mx-auto max-w-6xl space-y-8 px-4">
         <div className="space-y-2">
-          <h1 className="font-bold text-3xl">Dashboard</h1>
+          <h1 className="font-semibold text-3xl">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Select an organization to manage lost and found items.
           </p>
@@ -106,7 +106,7 @@ export default async function Dashboard({
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4">
       <div className="space-y-2">
-        <h1 className="font-bold text-3xl">Dashboard</h1>
+        <h1 className="font-semibold text-3xl">Dashboard</h1>
         <p className="text-muted-foreground text-sm">
           Select an organization to manage lost and found items.
         </p>

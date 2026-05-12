@@ -16,7 +16,7 @@ interface OrgNavProps {
 }
 
 export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
-  const router = useRouter();
+  const { push } = useRouter();
   const pathname = usePathname();
   const basePath = `/app/${organizationSlug}`;
 
@@ -34,13 +34,13 @@ export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
       <DropdownMenuContent align="end" sideOffset={8}>
         <DropdownMenuItem
           className={pathname === basePath ? "bg-accent" : ""}
-          onClick={() => router.push(basePath)}
+          onClick={() => push(basePath)}
         >
           Items
         </DropdownMenuItem>
         <DropdownMenuItem
           className={pathname.startsWith(`${basePath}/new`) ? "bg-accent" : ""}
-          onClick={() => router.push(`${basePath}/new`)}
+          onClick={() => push(`${basePath}/new`)}
         >
           Post Item
         </DropdownMenuItem>
@@ -49,7 +49,7 @@ export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
             className={
               pathname.startsWith(`${basePath}/settings`) ? "bg-accent" : ""
             }
-            onClick={() => router.push(`${basePath}/settings`)}
+            onClick={() => push(`${basePath}/settings`)}
           >
             Settings
           </DropdownMenuItem>
