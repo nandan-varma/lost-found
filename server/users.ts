@@ -17,6 +17,7 @@ export const getCurrentUser = async (): Promise<CurrentUserResult | null> => {
   const session = await getSession();
 
   if (!session) {
+    logger.info("getCurrentUser: no session");
     return null;
   }
 
@@ -37,6 +38,7 @@ export const getUsers = async (
     const admin = await isOrgAdmin(organizationId, userId);
 
     if (!admin) {
+      logger.info("getUsers: not authorized", { organizationId, userId });
       return [];
     }
 
@@ -44,6 +46,10 @@ export const getUsers = async (
     const requesterDomain = session?.user.email.split("@")[1]?.toLowerCase();
 
     if (!requesterDomain) {
+      logger.info("getUsers: no domain in email", {
+        organizationId,
+        userId: session?.user.id,
+      });
       return [];
     }
 
@@ -63,9 +69,15 @@ export const getUsers = async (
       ),
     });
 
+    logger.info("getUsers: success", {
+      organizationId,
+      userCount: users.length,
+      domain: requesterDomain,
+    });
+
     return users;
   } catch (error) {
-    logger.error("getUsers failed", { error, organizationId });
+    logger.error("getUsers: failed", { error, organizationId });
     return [];
   }
 };
@@ -79,6 +91,11 @@ export const searchUsers = async (
     const admin = await isOrgAdmin(organizationId, userId);
 
     if (!admin) {
+      logger.info("searchUsers: not authorized", {
+        organizationId,
+        userId,
+        query,
+      });
       return [];
     }
 
@@ -86,6 +103,10 @@ export const searchUsers = async (
     const requesterDomain = session?.user.email.split("@")[1]?.toLowerCase();
 
     if (!requesterDomain) {
+      logger.info("searchUsers: no domain in email", {
+        organizationId,
+        query,
+      });
       return [];
     }
 
@@ -108,9 +129,17 @@ export const searchUsers = async (
       limit: 10,
     });
 
-    return users.filter((u) => !memberUserIds.includes(u.id));
+    const filtered = users.filter((u) => !memberUserIds.includes(u.id));
+
+    logger.info("searchUsers: success", {
+      organizationId,
+      query,
+      resultCount: filtered.length,
+    });
+
+    return filtered;
   } catch (error) {
-    logger.error("searchUsers failed", { error, organizationId });
+    logger.error("searchUsers: failed", { error, organizationId, query });
     return [];
   }
 };

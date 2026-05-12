@@ -13,6 +13,7 @@ import {
   user,
 } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 
 export const metadata: Metadata = {
   title: "Accept invitation",
@@ -189,9 +190,12 @@ export default async function AcceptInvitationPage({
 async function acceptInvitationAsUser(invitationId: string) {
   "use server";
 
+  logger.info("acceptInvitation: start", { invitationId });
+
   const session = await getSession();
 
   if (!(session?.user?.id && session.user.email)) {
+    logger.warn("acceptInvitation: not authenticated", { invitationId });
     throw new Error("Not authenticated");
   }
 
@@ -200,6 +204,7 @@ async function acceptInvitationAsUser(invitationId: string) {
   });
 
   if (!invitationRecord) {
+    logger.warn("acceptInvitation: not found", { invitationId });
     throw new Error("Invitation not found");
   }
 
@@ -208,10 +213,15 @@ async function acceptInvitationAsUser(invitationId: string) {
   });
 
   if (!org) {
+    logger.error("acceptInvitation: org not found", {
+      invitationId,
+      organizationId: invitationRecord.organizationId,
+    });
     throw new Error("Organization not found");
   }
 
   if (!isInvitationValid(invitationRecord)) {
+    logger.warn("acceptInvitation: invalid or expired", { invitationId });
     throw new Error("Invalid or expired invitation");
   }
 
@@ -219,6 +229,11 @@ async function acceptInvitationAsUser(invitationId: string) {
     invitationRecord.email.trim().toLowerCase() !==
     session.user.email.trim().toLowerCase()
   ) {
+    logger.warn("acceptInvitation: email mismatch", {
+      invitationId,
+      invitationEmail: invitationRecord.email,
+      sessionEmail: session.user.email,
+    });
     throw new Error("Invitation email does not match current account");
   }
 
@@ -247,6 +262,11 @@ async function acceptInvitationAsUser(invitationId: string) {
             )
           );
       }
+      logger.info("acceptInvitation: already member, updated status", {
+        invitationId,
+        userId: session.user.id,
+        organizationId: invitationRecord.organizationId,
+      });
       return;
     }
 
@@ -262,6 +282,12 @@ async function acceptInvitationAsUser(invitationId: string) {
       .returning({ id: invitationTable.id });
 
     if (!updatedInvite) {
+      logger.warn(
+        "acceptInvitation: race condition, invite already processed",
+        {
+          invitationId,
+        }
+      );
       throw new Error("Invalid or expired invitation");
     }
 
@@ -271,6 +297,14 @@ async function acceptInvitationAsUser(invitationId: string) {
       userId: session.user.id,
       role,
       createdAt: new Date(),
+    });
+
+    logger.info("acceptInvitation: success", {
+      invitationId,
+      userId: session.user.id,
+      organizationId: invitationRecord.organizationId,
+      organizationSlug: org.slug,
+      role,
     });
   });
 

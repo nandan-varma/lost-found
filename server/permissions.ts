@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { item, member } from "@/db/schema";
 import { getSession } from "@/lib/get-session";
+import { logger } from "@/lib/logger";
 
 async function resolveUserId(userId?: string) {
   const session = await getSession();
@@ -40,7 +41,8 @@ export const isOrgAdmin = async (
       return false;
     }
     return membership.role === "admin" || membership.role === "owner";
-  } catch {
+  } catch (error) {
+    logger.error("isOrgAdmin: failed", { error, organizationId, userId });
     return false;
   }
 };
@@ -63,7 +65,8 @@ export const isOrgMember = async (
     });
 
     return !!membership;
-  } catch {
+  } catch (error) {
+    logger.error("isOrgMember: failed", { error, organizationId, userId });
     return false;
   }
 };
@@ -104,7 +107,8 @@ export const isItemOwnerOrAdmin = async (
       return false;
     }
     return membership.role === "admin" || membership.role === "owner";
-  } catch {
+  } catch (error) {
+    logger.error("isItemOwnerOrAdmin: failed", { error, itemId, userId });
     return false;
   }
 };

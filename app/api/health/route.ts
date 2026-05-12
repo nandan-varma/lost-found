@@ -1,10 +1,13 @@
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db/drizzle";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
     await db.execute(sql`select 1`);
+
+    logger.info("health: ok");
 
     return NextResponse.json(
       {
@@ -13,7 +16,11 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    logger.error("health: failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
     return NextResponse.json(
       {
         status: "error",

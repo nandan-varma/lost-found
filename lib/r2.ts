@@ -8,6 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { MAX_FILE_SIZE } from "./constants";
 import { getEnv } from "./env";
+import { logger } from "./logger";
 
 const R2_REGION = getEnv("R2_REGION");
 const R2_ENDPOINT = getEnv("R2_ENDPOINT");
@@ -30,21 +31,45 @@ export async function uploadFile(
   file: File,
   folder: string
 ): Promise<{ url: string; key: string }> {
+  const originalName = file.name;
+
   if (!file.type.startsWith("image/")) {
+    logger.warn("uploadFile: invalid mime type", {
+      mimeType: file.type,
+      folder,
+    });
     throw new Error("Only image files are allowed");
   }
 
   if (file.size > MAX_FILE_SIZE) {
+    logger.warn("uploadFile: file too large", {
+      size: file.size,
+      maxSize: MAX_FILE_SIZE,
+      folder,
+    });
     throw new Error("File size must be less than 10 MB");
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
   if (!isSupportedImage(buffer)) {
+    logger.warn("uploadFile: unsupported image format", {
+      originalName,
+      mimeType: file.type,
+      folder,
+    });
     throw new Error("Unsupported or invalid image file");
   }
 
-  const key = `${folder}/${randomUUID()}-${sanitize(file.name)}`;
+  const key = `${folder}/${randomUUID()}-${sanitize(originalName)}`;
+
+  logger.info("uploadFile: uploading", {
+    key,
+    folder,
+    originalName,
+    size: file.size,
+    mimeType: file.type,
+  });
 
   await client.send(
     new PutObjectCommand({
@@ -57,16 +82,22 @@ export async function uploadFile(
 
   const url = `${R2_PUBLIC_URL}/${key}`;
 
+  logger.info("uploadFile: success", { key, url, originalName });
+
   return { url, key };
 }
 
 export async function deleteFile(key: string): Promise<void> {
+  logger.info("deleteFile: deleting", { key });
+
   await client.send(
     new DeleteObjectCommand({
       Bucket: R2_BUCKET_NAME,
       Key: key,
     })
   );
+
+  logger.info("deleteFile: success", { key });
 }
 
 function sanitize(filename: string): string {
