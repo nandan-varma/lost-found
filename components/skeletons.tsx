@@ -96,7 +96,7 @@ export function MembersTableSkeleton() {
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="size-8" />
                   </div>
                 </div>
               ))}
