@@ -121,6 +121,7 @@ export function ItemDetail({
           currentStatus={i.status}
           itemId={i.id}
           organizationId={organizationId}
+          organizationSlug={organizationSlug}
         />
       )}
     </div>

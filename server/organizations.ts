@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { db } from "@/db/drizzle";
@@ -74,6 +74,7 @@ export async function getActiveOrganization(
   try {
     const memberUser = await db.query.member.findFirst({
       where: eq(member.userId, userId),
+      orderBy: desc(member.createdAt),
     });
 
     if (!memberUser) {

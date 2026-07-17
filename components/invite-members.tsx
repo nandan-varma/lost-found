@@ -168,11 +168,11 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
             emailBatch.map((email) => mutation.mutateAsync(email))
           );
 
-          const successCount = results.filter(
-            (result) => result.status === "fulfilled"
-          ).length;
+          const succeededEmails = emailBatch.filter(
+            (_, index) => results[index].status === "fulfilled"
+          );
 
-          if (successCount > 0) {
+          if (succeededEmails.length > 0) {
             queryClient.invalidateQueries({
               queryKey: queryKeys.members.all(organizationId),
             });
@@ -183,7 +183,7 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
           }
 
           setEmails((prev) =>
-            prev.filter((email) => !emailBatch.includes(email))
+            prev.filter((email) => !succeededEmails.includes(email))
           );
         }}
         size="sm"

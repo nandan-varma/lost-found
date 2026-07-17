@@ -107,6 +107,8 @@ export const auth = betterAuth({
   }),
   plugins: [
     organization({
+      allowUserToCreateOrganization: () =>
+        process.env.FEATURE_FLAG_CREATE_ORGANIZATION === "true",
       sendInvitationEmail: async (data) => {
         const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${data.id}`;
 

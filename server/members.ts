@@ -218,6 +218,17 @@ export const removeMember = async (
       };
     }
 
+    if (memberRecord.role === "owner" && membership.role !== "owner") {
+      logger.warn("removeMember: admin cannot remove owner", {
+        memberId,
+        userId: session.user.id,
+      });
+      return {
+        success: false,
+        error: "Only an owner can remove another owner.",
+      };
+    }
+
     if (memberRecord.role === "owner") {
       const owners = await db.query.member.findMany({
         where: and(
