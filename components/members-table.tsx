@@ -7,14 +7,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Member } from "@/db/schema";
+import type { Member, User } from "@/db/schema";
 import MembersTableAction from "./members-table-action";
 
 interface MembersTableProps {
-  members: Member[];
+  members: Array<Member & { user: User }>;
+  organizationId: string;
 }
 
-export default function MembersTable({ members }: MembersTableProps) {
+export default function MembersTable({
+  members,
+  organizationId,
+}: MembersTableProps) {
   return (
     <Table>
       <TableCaption>A list of organization members.</TableCaption>
@@ -33,7 +37,10 @@ export default function MembersTable({ members }: MembersTableProps) {
             <TableCell>{member.user.email}</TableCell>
             <TableCell>{member.role}</TableCell>
             <TableCell className="text-right">
-              <MembersTableAction memberId={member.id} />
+              <MembersTableAction
+                memberId={member.id}
+                organizationId={organizationId}
+              />
             </TableCell>
           </TableRow>
         ))}

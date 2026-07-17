@@ -1,45 +1,53 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/query-keys";
 import { removeMember } from "@/server/members";
 import { Button } from "./ui/button";
 
-export default function MembersTableAction({ memberId }: { memberId: string }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+export default function MembersTableAction({
+  memberId,
+  organizationId,
+}: {
+  memberId: string;
+  organizationId: string;
+}) {
+  const { refresh } = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleRemoveMember = async () => {
-    try {
-      setIsLoading(true);
-      const { success, error } = await removeMember(memberId);
-
-      if (!success) {
-        toast.error(error || "Failed to remove member");
-        return;
+  const mutation = useMutation({
+    mutationFn: () => removeMember(memberId),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Member removed from organization");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.members.all(organizationId),
+        });
+        refresh();
+      } else {
+        toast.error(result.error);
       }
-
-      setIsLoading(false);
-      toast.success("Member removed from organization");
-      router.refresh();
-    } catch (error) {
-      console.error(error);
+    },
+    onError: () => {
       toast.error("Failed to remove member from organization");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   return (
     <Button
-      disabled={isLoading}
-      onClick={handleRemoveMember}
+      disabled={mutation.isPending}
+      onClick={() => mutation.mutate()}
       size="sm"
       variant="destructive"
     >
-      {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Remove"}
+      {mutation.isPending ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        "Remove"
+      )}
     </Button>
   );
 }

@@ -1,6 +1,16 @@
-import Image from "next/image";
+import { FileSearch } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/forms/login-form";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description:
+    "Sign in with your organization account to access Lost and Found.",
+  alternates: {
+    canonical: "/login",
+  },
+};
 
 export default function LoginPage() {
   return (
@@ -11,15 +21,9 @@ export default function LoginPage() {
           href="/"
         >
           <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Image
-              alt="Better Auth Starter Logo"
-              height={50}
-              priority
-              src={"/better-auth-starter.png"}
-              width={50}
-            />
+            <FileSearch className="size-4" />
           </div>
-          Better Auth Starter
+          Lost and Found
         </Link>
         <LoginForm />
       </div>

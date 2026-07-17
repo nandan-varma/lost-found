@@ -14,10 +14,10 @@ import {
 
 interface OrganizationInvitationEmailProps {
   email: string;
-  invitedByUsername: string;
   invitedByEmail: string;
-  teamName: string;
+  invitedByUsername: string;
   inviteLink: string;
+  teamName: string;
 }
 
 const OrganizationInvitationEmail = (
@@ -27,40 +27,47 @@ const OrganizationInvitationEmail = (
     <Html dir="ltr" lang="en">
       <Tailwind>
         <Head />
-        <Preview>You&apos;ve been invited to join {props.teamName}</Preview>
-        <Body className="bg-gray-100 py-[40px] font-sans">
-          <Container className="mx-auto max-w-[600px] rounded-[8px] bg-white p-[40px] shadow-sm">
-            {/* Header */}
-            <Section className="mb-[32px] text-center">
-              <Heading className="m-0 mb-[8px] font-bold text-[28px] text-gray-900">
-                You&apos;re invited!
+        <Preview>
+          You&apos;ve been invited to join {props.teamName} on Lost and Found
+        </Preview>
+        <Body className="bg-zinc-50 py-[40px] font-sans">
+          <Container className="mx-auto max-w-[600px] rounded-lg bg-white p-8 shadow-sm">
+            {/* Logo/Brand */}
+            <Section className="mb-6">
+              <Text className="font-bold text-xl text-zinc-900 tracking-tight">
+                Lost and Found
+              </Text>
+            </Section>
+
+            {/* Main Heading */}
+            <Section className="mb-6">
+              <Heading className="m-0 mb-2 font-bold text-2xl text-zinc-900">
+                You&apos;re invited! 🎉
               </Heading>
-              <Text className="m-0 text-[16px] text-gray-600">
-                Join {props.teamName} and start collaborating
+              <Text className="m-0 text-base text-zinc-600">
+                Join {props.teamName} on Lost and Found
               </Text>
             </Section>
 
             {/* Main Content */}
-            <Section className="mb-[32px]">
-              <Text className="m-0 mb-[16px] text-[16px] text-gray-700">
-                Hi there,
-              </Text>
-              <Text className="m-0 mb-[16px] text-[16px] text-gray-700">
+            <Section className="mb-6">
+              <Text className="m-0 mb-3 text-base text-zinc-700">Hi,</Text>
+              <Text className="m-0 mb-3 text-base text-zinc-700">
                 <strong>{props.invitedByUsername}</strong> (
-                {props.invitedByEmail}) has invited you to join{" "}
-                <strong>{props.teamName}</strong> on our platform.
+                {props.invitedByEmail}) has invited you to join the &quot;
+                {props.teamName}&quot; organization on our Lost and Found
+                platform.
               </Text>
-              <Text className="m-0 mb-[24px] text-[16px] text-gray-700">
-                Accept this invitation to start collaborating with your team
-                members and access all the tools and resources available in your
-                organization.
+              <Text className="m-0 text-base text-zinc-700">
+                Accept this invitation to start managing lost and found items
+                with your organization.
               </Text>
             </Section>
 
             {/* CTA Button */}
-            <Section className="mb-[32px] text-center">
+            <Section className="mb-6 text-center">
               <Button
-                className="box-border inline-block rounded-[6px] bg-blue-600 px-[24px] py-[12px] font-medium text-[16px] text-white no-underline"
+                className="box-border inline-block rounded-md bg-zinc-900 px-6 py-3 font-medium text-base text-white no-underline"
                 href={props.inviteLink}
               >
                 Accept Invitation
@@ -68,14 +75,13 @@ const OrganizationInvitationEmail = (
             </Section>
 
             {/* Alternative Link */}
-            <Section className="mb-[32px]">
-              <Text className="m-0 mb-[8px] text-[14px] text-gray-600">
-                If the button above doesn&apos;t work, you can also copy and
-                paste this link into your browser:
+            <Section className="mb-6 rounded-md bg-zinc-50 p-4">
+              <Text className="m-0 mb-2 text-sm text-zinc-600">
+                If the button doesn&apos;t work, copy and paste this link:
               </Text>
-              <Text className="m-0 break-all text-[14px]">
+              <Text className="m-0 break-all text-sm">
                 <Link
-                  className="text-blue-600 underline"
+                  className="text-zinc-900 underline"
                   href={props.inviteLink}
                 >
                   {props.inviteLink}
@@ -83,32 +89,15 @@ const OrganizationInvitationEmail = (
               </Text>
             </Section>
 
-            {/* Additional Info */}
-            <Section className="mb-[24px] border-gray-200 border-t pt-[24px]">
-              <Text className="m-0 mb-[8px] text-[14px] text-gray-600">
-                <strong>Organization:</strong> {props.teamName}
-              </Text>
-              <Text className="m-0 mb-[8px] text-[14px] text-gray-600">
-                <strong>Invited by:</strong> {props.invitedByUsername} (
-                {props.invitedByEmail})
-              </Text>
-              <Text className="m-0 text-[14px] text-gray-600">
-                <strong>Your email:</strong> {props.email}
-              </Text>
-            </Section>
-
             {/* Footer */}
-            <Section className="border-gray-200 border-t pt-[24px]">
-              <Text className="m-0 mb-[8px] text-center text-[12px] text-gray-500">
+            <Section className="border-zinc-200 border-t pt-4">
+              <Text className="m-0 text-xs text-zinc-500">
                 This invitation was sent to {props.email}. If you weren&apos;t
-                expecting this invitation, you can safely ignore this email.
+                expecting this, you can safely ignore this email.
               </Text>
-              <Text className="m-0 mb-[8px] text-center text-[12px] text-gray-500">
-                © {new Date().getFullYear()} Your Company Name. All rights
+              <Text className="m-0 mt-2 text-xs text-zinc-400">
+                © {new Date().getFullYear()} Lost and Found. All rights
                 reserved.
-              </Text>
-              <Text className="m-0 text-center text-[12px] text-gray-500">
-                123 Business Street, Suite 100, City, State 12345
               </Text>
             </Section>
           </Container>

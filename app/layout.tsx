@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { getSiteUrl } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +18,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Better Auth Starter",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: "Lost and Found",
+    template: "%s | Lost and Found",
+  },
   description:
-    "Simple starter pack for Better Auth, with Shadcn, Drizzle, and Neon",
+    "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
+  applicationName: "Lost and Found",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Lost and Found",
+    title: "Lost and Found",
+    description:
+      "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lost and Found",
+    description:
+      "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
+  },
 };
 
 export default function RootLayout({
@@ -36,7 +61,9 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          {children}
+          <TooltipProvider>
+            <Providers>{children}</Providers>
+          </TooltipProvider>
           <Toaster />
         </ThemeProvider>
       </body>

@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,15 +16,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { queryKeys } from "@/lib/query-keys";
+import { createOrganizationSchema } from "@/lib/validations";
+import { createOrganization } from "@/server/organizations";
 
-const formSchema = z.object({
-  name: z.string().min(2).max(50),
-  slug: z.string().min(2).max(50),
-});
+const formSchema = createOrganizationSchema;
 
-export function CreateOrganizationForm() {
-  const [isLoading, setIsLoading] = useState(false);
+interface CreateOrganizationFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateOrganizationForm({
+  onSuccess,
+}: CreateOrganizationFormProps) {
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,21 +39,27 @@ export function CreateOrganizationForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsLoading(true);
-      await authClient.organization.create({
-        name: values.name,
-        slug: values.slug,
-      });
-
-      toast.success("Organization created successfully");
-    } catch (error) {
-      console.error(error);
+  const mutation = useMutation({
+    mutationFn: (values: z.infer<typeof formSchema>) =>
+      createOrganization(values.name, values.slug),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Organization created successfully");
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.organizations.all(),
+        });
+        onSuccess?.();
+      } else {
+        toast.error(result.error);
+      }
+    },
+    onError: () => {
       toast.error("Failed to create organization");
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    mutation.mutate(values);
   }
 
   return (
@@ -82,8 +93,8 @@ export function CreateOrganizationForm() {
           )}
         />
 
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
+        <Button disabled={mutation.isPending} type="submit">
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             "Create Organization"
