@@ -2,3 +2,7 @@ allowBuilds:
   bufferutil: true
   esbuild: true
   sharp: true
+
+# Remove once drizzle-kit drops @esbuild-kit
+overrides:
+  esbuild: '>=0.28.1'
