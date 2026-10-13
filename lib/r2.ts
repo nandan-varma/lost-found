@@ -18,13 +18,13 @@ const R2_BUCKET_NAME = getEnv("R2_BUCKET_NAME");
 const R2_PUBLIC_URL = getEnv("R2_PUBLIC_URL");
 
 const client = new S3Client({
-  region: R2_REGION,
-  endpoint: R2_ENDPOINT,
   credentials: {
     accessKeyId: R2_ACCESS_KEY_ID,
     secretAccessKey: R2_SECRET_ACCESS_KEY,
   },
+  endpoint: R2_ENDPOINT,
   forcePathStyle: true,
+  region: R2_REGION,
 });
 
 export async function uploadFile(
@@ -35,17 +35,17 @@ export async function uploadFile(
 
   if (!file.type.startsWith("image/")) {
     logger.warn("uploadFile: invalid mime type", {
-      mimeType: file.type,
       folder,
+      mimeType: file.type,
     });
     throw new Error("Only image files are allowed");
   }
 
   if (file.size > MAX_FILE_SIZE) {
     logger.warn("uploadFile: file too large", {
-      size: file.size,
-      maxSize: MAX_FILE_SIZE,
       folder,
+      maxSize: MAX_FILE_SIZE,
+      size: file.size,
     });
     throw new Error("File size must be less than 10 MB");
   }
@@ -54,9 +54,9 @@ export async function uploadFile(
 
   if (!isSupportedImage(buffer)) {
     logger.warn("uploadFile: unsupported image format", {
-      originalName,
-      mimeType: file.type,
       folder,
+      mimeType: file.type,
+      originalName,
     });
     throw new Error("Unsupported or invalid image file");
   }
@@ -64,27 +64,27 @@ export async function uploadFile(
   const key = `${folder}/${randomUUID()}-${sanitize(originalName)}`;
 
   logger.info("uploadFile: uploading", {
-    key,
     folder,
+    key,
+    mimeType: file.type,
     originalName,
     size: file.size,
-    mimeType: file.type,
   });
 
   await client.send(
     new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
       Body: buffer,
+      Bucket: R2_BUCKET_NAME,
       ContentType: file.type,
+      Key: key,
     })
   );
 
   const url = `${R2_PUBLIC_URL}/${key}`;
 
-  logger.info("uploadFile: success", { key, url, originalName });
+  logger.info("uploadFile: success", { key, originalName, url });
 
-  return { url, key };
+  return { key, url };
 }
 
 export async function deleteFile(key: string): Promise<void> {

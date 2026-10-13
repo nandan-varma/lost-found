@@ -8,10 +8,10 @@ const statusConfig: Record<
     variant: "default" | "secondary" | "destructive" | "outline";
   }
 > = {
-  lost: { label: "Lost", variant: "destructive" },
-  found: { label: "Found", variant: "default" },
   claimed: { label: "Claimed", variant: "outline" },
   closed: { label: "Closed", variant: "secondary" },
+  found: { label: "Found", variant: "default" },
+  lost: { label: "Lost", variant: "destructive" },
 };
 
 export function StatusBadge({ status }: { status: ItemStatus }) {

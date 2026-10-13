@@ -59,19 +59,19 @@ export async function getItems(
     }
 
     const items = await db.query.item.findMany({
+      orderBy: desc(item.createdAt),
       where: and(...conditions),
       with: {
         images: true,
         user: true,
       },
-      orderBy: desc(item.createdAt),
     });
 
     logger.info("getItems: success", {
-      organizationId,
-      userId: session.user.id,
       itemCount: items.length,
+      organizationId,
       status,
+      userId: session.user.id,
     });
 
     return items;
@@ -93,9 +93,9 @@ export async function getItem(itemId: string): Promise<ItemDetailResult> {
     const itemRecord = await db.query.item.findFirst({
       where: eq(item.id, itemId),
       with: {
+        claim: true,
         images: true,
         user: true,
-        claim: true,
       },
     });
 
@@ -137,22 +137,22 @@ export async function createItem(
     const imageEntries = formData.getAll("images");
 
     logger.info("createItem: start", {
-      title,
       description,
-      status,
-      organizationId,
       imageCount: imageEntries.length,
+      organizationId,
+      status,
+      title,
     });
 
     const parsed = createItemSchema.safeParse({
-      title,
       description,
-      status,
       organizationId,
+      status,
+      title,
     });
 
     if (!parsed.success) {
-      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const { fieldErrors } = parsed.error.flatten();
       logger.warn("createItem: validation failed", {
         fieldErrors,
         organizationId,
@@ -161,8 +161,8 @@ export async function createItem(
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
       return {
-        success: false,
         error: messages || "Invalid item data",
+        success: false,
       };
     }
 
@@ -176,8 +176,8 @@ export async function createItem(
         max: MAX_ITEM_IMAGES,
       });
       return {
-        success: false,
         error: `Maximum ${MAX_ITEM_IMAGES} images allowed.`,
+        success: false,
       };
     }
 
@@ -185,7 +185,7 @@ export async function createItem(
 
     if (!session) {
       logger.warn("createItem: not authenticated");
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     const member = await isOrgMember(parsed.data.organizationId);
@@ -195,7 +195,7 @@ export async function createItem(
         organizationId: parsed.data.organizationId,
         userId: session.user.id,
       });
-      return { success: false, error: "Not a member of this organization" };
+      return { error: "Not a member of this organization", success: false };
     }
 
     const uploadedKeys: string[] = [];
@@ -210,12 +210,12 @@ export async function createItem(
       const [newItem] = await tx
         .insert(item)
         .values({
+          description: parsed.data.description,
           id: newItemId,
           organizationId: parsed.data.organizationId,
-          userId: session.user.id,
-          title: parsed.data.title,
-          description: parsed.data.description,
           status: parsed.data.status,
+          title: parsed.data.title,
+          userId: session.user.id,
         })
         .returning();
 
@@ -223,8 +223,8 @@ export async function createItem(
         await tx.insert(itemImage).values(
           uploadedImages.map((img) => ({
             itemId: newItem.id,
-            url: img.url,
             key: img.key,
+            url: img.url,
           }))
         );
       }
@@ -233,15 +233,15 @@ export async function createItem(
     });
 
     logger.info("createItem: success", {
+      imageCount: uploadedImages.length,
       itemId: created.id,
       organizationId: parsed.data.organizationId,
       userId: session.user.id,
-      imageCount: uploadedImages.length,
     });
 
     return {
-      success: true,
       data: created,
+      success: true,
     };
   } catch (error) {
     logger.error("createItem: failed", {
@@ -249,8 +249,8 @@ export async function createItem(
       stack: error instanceof Error ? error.stack : undefined,
     });
     return {
-      success: false,
       error: "Failed to create item. Please try again.",
+      success: false,
     };
   }
 }
@@ -264,7 +264,7 @@ export async function updateItemStatus(
 
     if (!session) {
       logger.warn("updateItemStatus: not authenticated", { itemId });
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     const itemRecord = await db.query.item.findFirst({
@@ -273,7 +273,7 @@ export async function updateItemStatus(
 
     if (!itemRecord) {
       logger.info("updateItemStatus: item not found", { itemId });
-      return { success: false, error: "Item not found." };
+      return { error: "Item not found.", success: false };
     }
 
     const authorized = await isItemOwnerOrAdmin(itemId, undefined, itemRecord);
@@ -284,18 +284,18 @@ export async function updateItemStatus(
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You are not authorized to update this item.",
+        success: false,
       };
     }
 
     const validStatuses: ItemStatus[] = ["lost", "found", "claimed", "closed"];
 
     const transitions: Record<ItemStatus, ItemStatus[]> = {
-      lost: ["found", "closed"],
-      found: ["claimed", "closed"],
       claimed: ["closed"],
       closed: [],
+      found: ["claimed", "closed"],
+      lost: ["found", "closed"],
     };
 
     if (!validStatuses.includes(newStatus)) {
@@ -304,20 +304,20 @@ export async function updateItemStatus(
         newStatus,
       });
       return {
-        success: false,
         error: "Invalid item status.",
+        success: false,
       };
     }
 
     if (!transitions[itemRecord.status]?.includes(newStatus)) {
       logger.warn("updateItemStatus: invalid transition", {
-        itemId,
         currentStatus: itemRecord.status,
+        itemId,
         newStatus,
       });
       return {
-        success: false,
         error: `Cannot transition from "${itemRecord.status}" to "${newStatus}".`,
+        success: false,
       };
     }
 
@@ -328,14 +328,14 @@ export async function updateItemStatus(
 
     logger.info("updateItemStatus: success", {
       itemId,
-      userId: session.user.id,
       newStatus,
+      userId: session.user.id,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
     logger.error("updateItemStatus: failed", { error, itemId, newStatus });
-    return { success: false, error: "Failed to update item." };
+    return { error: "Failed to update item.", success: false };
   }
 }
 
@@ -347,7 +347,7 @@ export async function claimItem(
     const parsed = claimItemSchema.safeParse(data);
 
     if (!parsed.success) {
-      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const { fieldErrors } = parsed.error.flatten();
       logger.warn("claimItem: validation failed", {
         fieldErrors,
         itemId,
@@ -356,8 +356,8 @@ export async function claimItem(
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
       return {
-        success: false,
         error: messages || "Invalid claim data",
+        success: false,
       };
     }
 
@@ -365,7 +365,7 @@ export async function claimItem(
 
     if (!session) {
       logger.warn("claimItem: not authenticated", { itemId });
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     const itemRecord = await db.query.item.findFirst({
@@ -374,7 +374,7 @@ export async function claimItem(
 
     if (!itemRecord) {
       logger.info("claimItem: item not found", { itemId });
-      return { success: false, error: "Item not found." };
+      return { error: "Item not found.", success: false };
     }
 
     if (itemRecord.status !== "found") {
@@ -383,8 +383,8 @@ export async function claimItem(
         status: itemRecord.status,
       });
       return {
-        success: false,
         error: "This item is not available for claiming.",
+        success: false,
       };
     }
 
@@ -394,8 +394,8 @@ export async function claimItem(
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You cannot claim your own item.",
+        success: false,
       };
     }
 
@@ -407,16 +407,16 @@ export async function claimItem(
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You are not a member of this organization.",
+        success: false,
       };
     }
 
     await db.transaction(async (tx) => {
       await tx.insert(claim).values({
-        itemId,
-        claimantName: parsed.data.claimantName,
         claimantEmail: parsed.data.claimantEmail,
+        claimantName: parsed.data.claimantName,
+        itemId,
         message: parsed.data.message ?? null,
       });
 
@@ -427,15 +427,15 @@ export async function claimItem(
     });
 
     logger.info("claimItem: success", {
+      claimantEmail: parsed.data.claimantEmail,
       itemId,
       userId: session.user.id,
-      claimantEmail: parsed.data.claimantEmail,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
     logger.error("claimItem: failed", { error, itemId });
-    return { success: false, error: "Failed to claim item." };
+    return { error: "Failed to claim item.", success: false };
   }
 }
 
@@ -445,7 +445,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
 
     if (!session) {
       logger.warn("deleteItem: not authenticated", { itemId });
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     const itemRecord = await db.query.item.findFirst({
@@ -457,7 +457,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
 
     if (!itemRecord) {
       logger.info("deleteItem: item not found", { itemId });
-      return { success: false, error: "Item not found." };
+      return { error: "Item not found.", success: false };
     }
 
     const authorized = await isItemOwnerOrAdmin(itemId, undefined, itemRecord);
@@ -468,8 +468,8 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You are not authorized to delete this item.",
+        success: false,
       };
     }
 
@@ -486,14 +486,14 @@ export async function deleteItem(itemId: string): Promise<ActionResult<null>> {
     );
 
     logger.info("deleteItem: success", {
+      imagesDeleted: itemRecord.images.length,
       itemId,
       userId: session.user.id,
-      imagesDeleted: itemRecord.images.length,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
     logger.error("deleteItem: failed", { error, itemId });
-    return { success: false, error: "Failed to delete item." };
+    return { error: "Failed to delete item.", success: false };
   }
 }

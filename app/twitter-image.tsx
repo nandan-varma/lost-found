@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 
 export const size = {
-  width: 1200,
   height: 630,
+  width: 1200,
 };
 
 export const contentType = "image/png";
@@ -11,22 +11,22 @@ export default function TwitterImage() {
   return new ImageResponse(
     <div
       style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "64px",
         background:
           "linear-gradient(135deg, #111827 0%, #1f2937 60%, #374151 100%)",
         color: "#f9fafb",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        justifyContent: "center",
+        padding: "64px",
+        width: "100%",
       }}
     >
       <div
         style={{
           fontSize: 34,
-          opacity: 0.9,
           marginBottom: 20,
+          opacity: 0.9,
         }}
       >
         Lost and Found
@@ -34,8 +34,8 @@ export default function TwitterImage() {
       <div
         style={{
           fontSize: 72,
-          lineHeight: 1.1,
           fontWeight: 700,
+          lineHeight: 1.1,
           maxWidth: 900,
         }}
       >

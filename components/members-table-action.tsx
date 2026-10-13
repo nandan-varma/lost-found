@@ -20,6 +20,9 @@ export default function MembersTableAction({
 
   const mutation = useMutation({
     mutationFn: () => removeMember(memberId),
+    onError: () => {
+      toast.error("Failed to remove member from organization");
+    },
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Member removed from organization");
@@ -30,9 +33,6 @@ export default function MembersTableAction({
       } else {
         toast.error(result.error);
       }
-    },
-    onError: () => {
-      toast.error("Failed to remove member from organization");
     },
   });
 

@@ -12,10 +12,10 @@ function getEnv(name: string): string {
 }
 
 export default defineConfig({
-  schema: "./db/schema.ts",
-  out: "./migrations",
-  dialect: "postgresql",
   dbCredentials: {
     url: getEnv("DATABASE_URL"),
   },
+  dialect: "postgresql",
+  out: "./migrations",
+  schema: "./db/schema.ts",
 });

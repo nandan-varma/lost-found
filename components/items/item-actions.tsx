@@ -54,6 +54,10 @@ export function ItemActions({
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteItem(itemId),
+    onError: () => {
+      toast.error("Failed to delete item.");
+      setDeleteDialogOpen(false);
+    },
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Item deleted");
@@ -65,10 +69,6 @@ export function ItemActions({
         toast.error(result.error);
         setDeleteDialogOpen(false);
       }
-    },
-    onError: () => {
-      toast.error("Failed to delete item.");
-      setDeleteDialogOpen(false);
     },
   });
 

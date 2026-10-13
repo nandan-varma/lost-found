@@ -3,7 +3,6 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  plugins: [organizationClient()],
   fetchOptions: {
     onError: (context) => {
       const { response } = context;
@@ -15,4 +14,5 @@ export const authClient = createAuthClient({
       }
     },
   },
+  plugins: [organizationClient()],
 });

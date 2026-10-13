@@ -26,9 +26,9 @@ import { createItemSchema } from "@/lib/validations";
 import { createItem } from "@/server/items";
 
 const formSchema = createItemSchema.pick({
-  title: true,
   description: true,
   status: true,
+  title: true,
 });
 
 interface PostItemFormProps {
@@ -57,12 +57,12 @@ export function PostItemForm({
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
       description: "",
       status: "lost",
+      title: "",
     },
+    resolver: zodResolver(formSchema),
   });
 
   const mutation = useMutation({

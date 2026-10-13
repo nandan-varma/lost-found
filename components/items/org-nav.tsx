@@ -44,7 +44,7 @@ export function OrgNav({ isAdmin, organizationSlug }: OrgNavProps) {
         >
           Post Item
         </DropdownMenuItem>
-        {isAdmin && (
+        {!!isAdmin && (
           <DropdownMenuItem
             className={
               pathname.startsWith(`${basePath}/settings`) ? "bg-accent" : ""

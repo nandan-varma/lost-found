@@ -12,11 +12,11 @@ import { isOrgMember } from "@/server/permissions";
 type Params = Promise<{ slug: string }>;
 
 export const metadata: Metadata = {
-  title: "Post an item",
   robots: {
-    index: false,
     follow: false,
+    index: false,
   },
+  title: "Post an item",
 };
 
 async function PostItemContent({

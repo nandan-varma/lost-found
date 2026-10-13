@@ -24,8 +24,8 @@ export function ItemDetail({
   isOwnerOrAdmin,
 }: ItemDetailProps) {
   const { data: i } = useQuery({
-    queryKey: queryKeys.items.detail(itemId),
     queryFn: () => getItem(itemId),
+    queryKey: queryKeys.items.detail(itemId),
   });
 
   if (!i) {
@@ -95,7 +95,7 @@ export function ItemDetail({
               <span className="font-medium">Email:</span>{" "}
               {i.claim.claimantEmail}
             </p>
-            {i.claim.message && (
+            {!!i.claim.message && (
               <p>
                 <span className="font-medium">Message:</span> {i.claim.message}
               </p>

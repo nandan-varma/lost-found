@@ -25,16 +25,16 @@ export const inviteMember = async (
     const allowedRoles: Role[] = ["member", "admin"];
 
     logger.info("inviteMember: start", {
-      organizationId,
       email: normalizedEmail,
+      organizationId,
       role,
     });
 
     if (!allowedRoles.includes(role)) {
       logger.warn("inviteMember: invalid role", { role });
       return {
-        success: false,
         error: "Invalid role for invitation",
+        success: false,
       };
     }
 
@@ -43,8 +43,8 @@ export const inviteMember = async (
     if (!session?.user) {
       logger.warn("inviteMember: not authenticated");
       return {
-        success: false,
         error: "You must be logged in to invite members",
+        success: false,
       };
     }
 
@@ -62,8 +62,8 @@ export const inviteMember = async (
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You are not allowed to invite users to this organization",
+        success: false,
       };
     }
 
@@ -81,33 +81,33 @@ export const inviteMember = async (
 
       if (existingMember) {
         logger.info("inviteMember: already a member", {
-          organizationId,
           email: normalizedEmail,
           existingUserId: existingUser.id,
+          organizationId,
         });
         return {
-          success: false,
           error: "User is already a member of this organization",
+          success: false,
         };
       }
 
       await db.insert(member).values({
+        createdAt: new Date(),
         id: randomUUID(),
         organizationId,
-        userId: existingUser.id,
         role,
-        createdAt: new Date(),
+        userId: existingUser.id,
       });
 
       logger.info("inviteMember: direct add success", {
         organizationId,
-        userId: existingUser.id,
         role,
+        userId: existingUser.id,
       });
 
       return {
-        success: true,
         data: `${existingUser.name || normalizedEmail} added as member`,
+        success: true,
       };
     }
 
@@ -117,58 +117,58 @@ export const inviteMember = async (
 
     const invId = randomUUID();
     await db.insert(invitation).values({
-      id: invId,
       email: normalizedEmail,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      id: invId,
+      inviterId: session.user.id,
       organizationId,
       role,
       status: "pending",
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      inviterId: session.user.id,
     });
 
     const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invId}`;
 
     const { data, error } = await resend.emails.send({
       from: `${process.env.EMAIL_SENDER_NAME} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-      to: [normalizedEmail],
-      subject: `You've been invited to join ${org?.name} on Lost and Found`,
       react: OrganizationInvitationEmail({
         email: normalizedEmail,
-        invitedByUsername: session.user.name || "Someone",
         invitedByEmail: session.user.email || "",
-        teamName: org?.name || "the organization",
+        invitedByUsername: session.user.name || "Someone",
         inviteLink,
+        teamName: org?.name || "the organization",
       }),
+      subject: `You've been invited to join ${org?.name} on Lost and Found`,
+      to: [normalizedEmail],
     });
 
     if (error) {
       logger.error("inviteMember: email send failed", {
         error,
-        to: normalizedEmail,
         invitationId: invId,
+        to: normalizedEmail,
       });
       return {
-        success: false,
         error: "Failed to send invitation email",
+        success: false,
       };
     }
 
     logger.info("inviteMember: success", {
-      invitationId: invId,
       emailId: data?.id,
-      to: normalizedEmail,
+      invitationId: invId,
       role,
+      to: normalizedEmail,
     });
 
     return {
-      success: true,
       data: `Invitation sent to ${normalizedEmail}`,
+      success: true,
     };
   } catch (error) {
-    logger.error("inviteMember: failed", { error, organizationId, email });
+    logger.error("inviteMember: failed", { email, error, organizationId });
     return {
-      success: false,
       error: "Failed to invite member",
+      success: false,
     };
   }
 };
@@ -182,8 +182,8 @@ export const removeMember = async (
     if (!session?.user) {
       logger.warn("removeMember: not authenticated", { memberId });
       return {
-        success: false,
         error: "You must be logged in.",
+        success: false,
       };
     }
 
@@ -194,8 +194,8 @@ export const removeMember = async (
     if (!memberRecord) {
       logger.info("removeMember: member not found", { memberId });
       return {
-        success: false,
         error: "Member not found.",
+        success: false,
       };
     }
 
@@ -213,8 +213,8 @@ export const removeMember = async (
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "You are not authorized to remove members.",
+        success: false,
       };
     }
 
@@ -224,8 +224,8 @@ export const removeMember = async (
         userId: session.user.id,
       });
       return {
-        success: false,
         error: "Only an owner can remove another owner.",
+        success: false,
       };
     }
 
@@ -243,8 +243,8 @@ export const removeMember = async (
           organizationId: memberRecord.organizationId,
         });
         return {
-          success: false,
           error: "Cannot remove the last owner of the organization.",
+          success: false,
         };
       }
     }
@@ -253,20 +253,20 @@ export const removeMember = async (
 
     logger.info("removeMember: success", {
       memberId,
-      removedUserId: memberRecord.userId,
       organizationId: memberRecord.organizationId,
       removedRole: memberRecord.role,
+      removedUserId: memberRecord.userId,
     });
 
     return {
-      success: true,
       data: null,
+      success: true,
     };
   } catch (error) {
     logger.error("removeMember: failed", { error, memberId });
     return {
-      success: false,
       error: "Failed to remove member.",
+      success: false,
     };
   }
 };
@@ -294,13 +294,13 @@ export const getOrganizationMembers = async (
     });
 
     logger.info("getOrganizationMembers: success", {
-      organizationId,
       memberCount: members.length,
+      organizationId,
     });
 
     return members;
   } catch (error) {
     logger.error("getOrganizationMembers: failed", { error, organizationId });
-    throw new Error("Failed to fetch organization members.");
+    throw new Error("Failed to fetch organization members.", { cause: error });
   }
 };

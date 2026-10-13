@@ -3,39 +3,39 @@ type LogLevel = "debug" | "info" | "warn" | "error";
 type LogContext = Record<string, unknown>;
 
 const COLORS = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
   blue: "\x1b[34m",
-  magenta: "\x1b[35m",
+  bold: "\x1b[1m",
   cyan: "\x1b[36m",
-  white: "\x1b[37m",
+  dim: "\x1b[2m",
   gray: "\x1b[90m",
+  green: "\x1b[32m",
+  magenta: "\x1b[35m",
+  red: "\x1b[31m",
+  reset: "\x1b[0m",
+  white: "\x1b[37m",
+  yellow: "\x1b[33m",
 };
 
 const LEVEL_COLORS: Record<LogLevel, string> = {
   debug: COLORS.gray,
+  error: COLORS.red,
   info: COLORS.green,
   warn: COLORS.yellow,
-  error: COLORS.red,
 };
 
 const LEVEL_ICONS: Record<LogLevel, string> = {
   debug: "○",
+  error: "✖",
   info: "●",
   warn: "▲",
-  error: "✖",
 };
 
 const STACK_LINE_REGEX = /at (.+) \((.+):(\d+):(\d+)\)/;
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleTimeString("en-US", {
-    hour12: false,
     hour: "2-digit",
+    hour12: false,
     minute: "2-digit",
     second: "2-digit",
   });
@@ -119,9 +119,9 @@ function log(level: LogLevel, message: string, context: LogContext = {}) {
   if (process.env.NODE_ENV === "production") {
     console.log(
       JSON.stringify({
-        timestamp: new Date().toISOString(),
         level,
         message,
+        timestamp: new Date().toISOString(),
         ...context,
       })
     );
@@ -155,23 +155,23 @@ function log(level: LogLevel, message: string, context: LogContext = {}) {
 export const logger = {
   debug: (message: string, context?: LogContext) =>
     log("debug", message, context),
+  error: (message: string, context?: LogContext) =>
+    log("error", message, context),
   info: (message: string, context?: LogContext) =>
     log("info", message, context),
   warn: (message: string, context?: LogContext) =>
     log("warn", message, context),
-  error: (message: string, context?: LogContext) =>
-    log("error", message, context),
 };
 
 export function createScopedLogger(scope: string) {
   return {
     debug: (message: string, context?: LogContext) =>
       log("debug", `${scope}: ${message}`, context),
+    error: (message: string, context?: LogContext) =>
+      log("error", `${scope}: ${message}`, context),
     info: (message: string, context?: LogContext) =>
       log("info", `${scope}: ${message}`, context),
     warn: (message: string, context?: LogContext) =>
       log("warn", `${scope}: ${message}`, context),
-    error: (message: string, context?: LogContext) =>
-      log("error", `${scope}: ${message}`, context),
   };
 }

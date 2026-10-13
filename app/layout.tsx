@@ -8,40 +8,40 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { getSiteUrl } from "@/lib/site";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
   subsets: ["latin"],
+  variable: "--font-geist-sans",
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+  applicationName: "Lost and Found",
+  description:
+    "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
   metadataBase: new URL(getSiteUrl()),
+  openGraph: {
+    description:
+      "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
+    siteName: "Lost and Found",
+    title: "Lost and Found",
+    type: "website",
+    url: "/",
+  },
   title: {
     default: "Lost and Found",
     template: "%s | Lost and Found",
   },
-  description:
-    "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
-  applicationName: "Lost and Found",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    siteName: "Lost and Found",
-    title: "Lost and Found",
-    description:
-      "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
-    url: "/",
-  },
   twitter: {
     card: "summary_large_image",
-    title: "Lost and Found",
     description:
       "Find what's lost. Return what's found. A simple way for your organization to track lost and found items.",
+    title: "Lost and Found",
   },
 };
 

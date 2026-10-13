@@ -15,7 +15,7 @@ export function ItemCard({
   organizationSlug,
   priority,
 }: ItemCardProps) {
-  const firstImage = i.images[0];
+  const [firstImage] = i.images;
 
   return (
     <Link href={`/app/${organizationSlug}/items/${i.id}`}>

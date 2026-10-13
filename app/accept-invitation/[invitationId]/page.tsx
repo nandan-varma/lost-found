@@ -16,11 +16,11 @@ import { getSession } from "@/lib/get-session";
 import { logger } from "@/lib/logger";
 
 export const metadata: Metadata = {
-  title: "Accept invitation",
   robots: {
-    index: false,
     follow: false,
+    index: false,
   },
+  title: "Accept invitation",
 };
 
 async function getInvitation(id: string) {
@@ -230,8 +230,8 @@ async function acceptInvitationAsUser(invitationId: string) {
     session.user.email.trim().toLowerCase()
   ) {
     logger.warn("acceptInvitation: email mismatch", {
-      invitationId,
       invitationEmail: invitationRecord.email,
+      invitationId,
       sessionEmail: session.user.email,
     });
     throw new Error("Invitation email does not match current account");
@@ -264,8 +264,8 @@ async function acceptInvitationAsUser(invitationId: string) {
       }
       logger.info("acceptInvitation: already member, updated status", {
         invitationId,
-        userId: session.user.id,
         organizationId: invitationRecord.organizationId,
+        userId: session.user.id,
       });
       return;
     }
@@ -292,19 +292,19 @@ async function acceptInvitationAsUser(invitationId: string) {
     }
 
     await tx.insert(member).values({
+      createdAt: new Date(),
       id: randomUUID(),
       organizationId: invitationRecord.organizationId,
-      userId: session.user.id,
       role,
-      createdAt: new Date(),
+      userId: session.user.id,
     });
 
     logger.info("acceptInvitation: success", {
       invitationId,
-      userId: session.user.id,
       organizationId: invitationRecord.organizationId,
       organizationSlug: org.slug,
       role,
+      userId: session.user.id,
     });
   });
 

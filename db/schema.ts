@@ -11,16 +11,16 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified")
     .$defaultFn(() => false)
     .notNull(),
+  id: text("id").primaryKey(),
   image: text("image"),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
+  name: text("name").notNull(),
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
@@ -29,17 +29,17 @@ export const user = pgTable("user", {
 export const session = pgTable(
   "session",
   {
-    id: text("id").primaryKey(),
-    expiresAt: timestamp("expires_at").notNull(),
-    token: text("token").notNull().unique(),
+    activeOrganizationId: text("active_organization_id"),
     createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    id: text("id").primaryKey(),
     ipAddress: text("ip_address"),
+    token: text("token").notNull().unique(),
+    updatedAt: timestamp("updated_at").notNull(),
     userAgent: text("user_agent"),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    activeOrganizationId: text("active_organization_id"),
   },
   (table) => [index("session_userId_idx").on(table.userId)]
 );
@@ -47,21 +47,21 @@ export const session = pgTable(
 export const account = pgTable(
   "account",
   {
-    id: text("id").primaryKey(),
+    accessToken: text("access_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
     accountId: text("account_id").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+    id: text("id").primaryKey(),
+    idToken: text("id_token"),
+    password: text("password"),
     providerId: text("provider_id").notNull(),
+    refreshToken: text("refresh_token"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    updatedAt: timestamp("updated_at").notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    accessToken: text("access_token"),
-    refreshToken: text("refresh_token"),
-    idToken: text("id_token"),
-    accessTokenExpiresAt: timestamp("access_token_expires_at"),
-    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-    scope: text("scope"),
-    password: text("password"),
-    createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)]
 );
@@ -69,32 +69,32 @@ export const account = pgTable(
 export const verification = pgTable(
   "verification",
   {
-    id: text("id").primaryKey(),
-    identifier: text("identifier").notNull(),
-    value: text("value").notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at").$defaultFn(
       () => /* @__PURE__ */ new Date()
     ),
+    expiresAt: timestamp("expires_at").notNull(),
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
     updatedAt: timestamp("updated_at").$defaultFn(
       () => /* @__PURE__ */ new Date()
     ),
+    value: text("value").notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
 
 export const organization = pgTable("organization", {
+  createdAt: timestamp("created_at").notNull(),
+  domain: text("domain").unique(),
   id: text("id").primaryKey(),
+  logo: text("logo"),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
-  domain: text("domain").unique(),
-  logo: text("logo"),
-  createdAt: timestamp("created_at").notNull(),
 });
 
 export const organizationRelations = relations(organization, ({ many }) => ({
-  members: many(member),
   items: many(item),
+  members: many(member),
 }));
 
 export type Organization = typeof organization.$inferSelect;
@@ -115,24 +115,24 @@ export type ItemStatus = (typeof itemStatus.enumValues)[number];
 export const item = pgTable(
   "item",
   {
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    description: text("description").notNull(),
     id: text("id")
       .primaryKey()
       .$defaultFn(() => /* @__PURE__ */ randomUUID()),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    title: text("title").notNull(),
-    description: text("description").notNull(),
     status: itemStatus("status").default("lost").notNull(),
-    createdAt: timestamp("created_at")
-      .$defaultFn(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    title: text("title").notNull(),
     updatedAt: timestamp("updated_at")
       .$defaultFn(() => /* @__PURE__ */ new Date())
       .notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
   },
   (table) => [
     index("item_organizationId_status_idx").on(
@@ -145,6 +145,8 @@ export const item = pgTable(
 );
 
 export const itemRelations = relations(item, ({ one, many }) => ({
+  claim: one(claim),
+  images: many(itemImage),
   organization: one(organization, {
     fields: [item.organizationId],
     references: [organization.id],
@@ -153,8 +155,6 @@ export const itemRelations = relations(item, ({ one, many }) => ({
     fields: [item.userId],
     references: [user.id],
   }),
-  images: many(itemImage),
-  claim: one(claim),
 }));
 
 export type Item = typeof item.$inferSelect;
@@ -162,17 +162,17 @@ export type Item = typeof item.$inferSelect;
 export const itemImage = pgTable(
   "item_image",
   {
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
     id: text("id")
       .primaryKey()
       .$defaultFn(() => /* @__PURE__ */ randomUUID()),
     itemId: text("item_id")
       .notNull()
       .references(() => item.id, { onDelete: "cascade" }),
-    url: text("url").notNull(),
     key: text("key").notNull(),
-    createdAt: timestamp("created_at")
-      .$defaultFn(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    url: text("url").notNull(),
   },
   (table) => [index("item_image_itemId_idx").on(table.itemId)]
 );
@@ -187,6 +187,11 @@ export const itemImageRelations = relations(itemImage, ({ one }) => ({
 export type ItemImage = typeof itemImage.$inferSelect;
 
 export const claim = pgTable("claim", {
+  claimantEmail: text("claimant_email").notNull(),
+  claimantName: text("claimant_name").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
   id: text("id")
     .primaryKey()
     .$defaultFn(() => /* @__PURE__ */ randomUUID()),
@@ -194,12 +199,7 @@ export const claim = pgTable("claim", {
     .notNull()
     .unique()
     .references(() => item.id, { onDelete: "cascade" }),
-  claimantName: text("claimant_name").notNull(),
-  claimantEmail: text("claimant_email").notNull(),
   message: text("message"),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
 });
 
 export const claimRelations = relations(claim, ({ one }) => ({
@@ -214,15 +214,15 @@ export type Claim = typeof claim.$inferSelect;
 export const member = pgTable(
   "member",
   {
+    createdAt: timestamp("created_at").notNull(),
     id: text("id").primaryKey(),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+    role: role("role").default("member").notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    role: role("role").default("member").notNull(),
-    createdAt: timestamp("created_at").notNull(),
   },
   (table) => [
     index("member_organizationId_idx").on(table.organizationId),
@@ -254,20 +254,20 @@ export type User = typeof user.$inferSelect;
 export const invitation = pgTable(
   "invitation",
   {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
-    email: text("email").notNull(),
-    role: text("role"),
-    status: text("status").default("pending").notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at")
       .$defaultFn(() => /* @__PURE__ */ new Date())
       .notNull(),
+    email: text("email").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    id: text("id").primaryKey(),
     inviterId: text("inviter_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    role: text("role"),
+    status: text("status").default("pending").notNull(),
   },
   (table) => [
     index("invitation_organizationId_idx").on(table.organizationId),
@@ -276,19 +276,19 @@ export const invitation = pgTable(
 );
 
 export const schema = {
-  user,
-  session,
   account,
-  verification,
-  organization,
-  member,
+  claim,
+  claimRelations,
   invitation,
   item,
   itemImage,
-  claim,
-  organizationRelations,
-  memberRelations,
-  itemRelations,
   itemImageRelations,
-  claimRelations,
+  itemRelations,
+  member,
+  memberRelations,
+  organization,
+  organizationRelations,
+  session,
+  user,
+  verification,
 };

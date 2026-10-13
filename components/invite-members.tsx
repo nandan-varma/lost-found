@@ -23,9 +23,9 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
-    queryKey: queryKeys.users.search(organizationId, inputValue),
-    queryFn: () => searchUsers(organizationId, inputValue),
     enabled: inputValue.length >= 2,
+    queryFn: () => searchUsers(organizationId, inputValue),
+    queryKey: queryKeys.users.search(organizationId, inputValue),
     staleTime: 30_000,
   });
 
@@ -37,11 +37,11 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
       }
       return result.data;
     },
-    onSuccess: (message) => {
-      toast.success(message);
-    },
     onError: (error) => {
       toast.error(error.message || "Failed to invite member");
+    },
+    onSuccess: (message) => {
+      toast.success(message);
     },
   });
 
@@ -108,13 +108,13 @@ export function InviteMembers({ organizationId }: InviteMembersProps) {
               placeholder="Search by email or name..."
               value={inputValue}
             />
-            {isSearching && (
+            {!!isSearching && (
               <Loader2 className="absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin" />
             )}
           </div>
         </div>
 
-        {showResults && (
+        {!!showResults && (
           <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
             {filteredResults.length > 0
               ? filteredResults.map((user) => (

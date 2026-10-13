@@ -26,12 +26,12 @@ export async function generateMetadata({
   const item = await getItem(itemId);
 
   return {
-    title: item ? item.title : "Item",
     description: item?.description ?? "Item details",
     robots: {
-      index: false,
       follow: false,
+      index: false,
     },
+    title: item ? item.title : "Item",
   };
 }
 

@@ -7,7 +7,6 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: "*",
         allow: ["/", "/login", "/terms", "/privacy"],
         disallow: [
           "/app",
@@ -16,6 +15,7 @@ export default function robots(): MetadataRoute.Robots {
           "/settings/",
           "/accept-invitation/",
         ],
+        userAgent: "*",
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

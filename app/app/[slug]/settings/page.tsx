@@ -18,11 +18,11 @@ import { getOrganizationBySlug } from "@/server/organizations";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Organization settings",
   robots: {
-    index: false,
     follow: false,
+    index: false,
   },
+  title: "Organization settings",
 };
 
 type Params = Promise<{ slug: string }>;
@@ -117,7 +117,7 @@ export default async function MembersPage({ params }: { params: Params }) {
           </p>
         </div>
 
-        {isAdmin && organization && (
+        {isAdmin && !!organization && (
           <SetDomainForm
             currentDomain={organization.domain ?? null}
             orgId={organization.id}

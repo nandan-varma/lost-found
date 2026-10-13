@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "Privacy policy for Lost and Found.",
   alternates: {
     canonical: "/privacy",
   },
+  description: "Privacy policy for Lost and Found.",
+  title: "Privacy Policy",
 };
 
 export default function PrivacyPage() {

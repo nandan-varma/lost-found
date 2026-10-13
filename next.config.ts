@@ -12,19 +12,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "12mb",
     },
   },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "lost-and-found-images.nandanvarma.com",
-        pathname: "/**",
-      },
-    ],
-  },
   async headers() {
     return [
       {
-        source: "/(.*)",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
@@ -44,8 +34,18 @@ const nextConfig: NextConfig = {
             value: contentSecurityPolicy,
           },
         ],
+        source: "/(.*)",
       },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        hostname: "lost-and-found-images.nandanvarma.com",
+        pathname: "/**",
+        protocol: "https",
+      },
+    ],
   },
 };
 

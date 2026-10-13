@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "Terms of service for Lost and Found.",
   alternates: {
     canonical: "/terms",
   },
+  description: "Terms of service for Lost and Found.",
+  title: "Terms of Service",
 };
 
 export default function TermsPage() {

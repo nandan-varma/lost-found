@@ -85,7 +85,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
               height={0}
               sizes="90vw"
               src={images[selectedIndex].url}
-              style={{ width: "100%", height: "auto" }}
+              style={{ height: "auto", width: "100%" }}
               unoptimized
               width={0}
             />

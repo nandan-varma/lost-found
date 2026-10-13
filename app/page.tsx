@@ -8,43 +8,43 @@ import { getSession } from "@/lib/get-session";
 
 const features = [
   {
-    icon: MapPin,
-    title: "Report Lost & Found",
     description:
       "Quickly post items you've lost or found with photos and descriptions.",
+    icon: MapPin,
+    title: "Report Lost & Found",
   },
   {
-    icon: Search,
-    title: "Browse Listings",
     description:
       "Search through lost and found items posted by your community.",
+    icon: Search,
+    title: "Browse Listings",
   },
   {
-    icon: Shield,
-    title: "Claim Verification",
     description:
       "Secure claim process to ensure items are returned to the right owner.",
+    icon: Shield,
+    title: "Claim Verification",
   },
   {
-    icon: Users,
-    title: "Organization-Focused",
     description:
       "Built for schools, offices, and communities to manage lost items together.",
+    icon: Users,
+    title: "Organization-Focused",
   },
   {
+    description: "Upload multiple photos to help identify lost or found items.",
     icon: Eye,
     title: "Image Uploads",
-    description: "Upload multiple photos to help identify lost or found items.",
   },
 ];
 
 export const metadata: Metadata = {
-  title: "Lost and Found for Organizations",
-  description:
-    "Track lost and found items across your school, office, or community with a simple shared workspace.",
   alternates: {
     canonical: "/",
   },
+  description:
+    "Track lost and found items across your school, office, or community with a simple shared workspace.",
+  title: "Lost and Found for Organizations",
 };
 
 export default async function Home() {
@@ -137,22 +137,22 @@ export default async function Home() {
             <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
               {[
                 {
-                  step: "01",
-                  title: "Post an Item",
                   description:
                     "Snap a photo, add a description, and tag it as lost or found.",
+                  step: "01",
+                  title: "Post an Item",
                 },
                 {
-                  step: "02",
-                  title: "Browse & Match",
                   description:
                     "Community members browse listings to find their missing items.",
+                  step: "02",
+                  title: "Browse & Match",
                 },
                 {
-                  step: "03",
-                  title: "Claim & Return",
                   description:
                     "Claim an item and coordinate its return through the platform.",
+                  step: "03",
+                  title: "Claim & Return",
                 },
               ].map((item) => (
                 <div className="space-y-3" key={item.step}>

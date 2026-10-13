@@ -70,9 +70,9 @@ export const getUsers = async (
     });
 
     logger.info("getUsers: success", {
+      domain: requesterDomain,
       organizationId,
       userCount: users.length,
-      domain: requesterDomain,
     });
 
     return users;
@@ -93,8 +93,8 @@ export const searchUsers = async (
     if (!admin) {
       logger.info("searchUsers: not authorized", {
         organizationId,
-        userId,
         query,
+        userId,
       });
       return [];
     }
@@ -119,6 +119,7 @@ export const searchUsers = async (
     const searchQuery = query.slice(0, 100);
 
     const users = await db.query.user.findMany({
+      limit: 10,
       where: and(
         or(
           ilike(user.email, `%${searchQuery}%`),
@@ -126,7 +127,6 @@ export const searchUsers = async (
         ),
         ilike(user.email, `%@${requesterDomain}`)
       ),
-      limit: 10,
     });
 
     const filtered = users.filter((u) => !memberUserIds.includes(u.id));

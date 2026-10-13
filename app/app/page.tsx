@@ -83,7 +83,7 @@ export default async function Dashboard({
                   <p className="truncate font-medium">{org.name}</p>
                   <p className="truncate text-muted-foreground text-xs">
                     {org.slug}
-                    {org.domain && ` \u00B7 ${org.domain}`}
+                    {!!org.domain && ` \u00B7 ${org.domain}`}
                   </p>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default async function Dashboard({
                   <p className="truncate font-medium">{org.name}</p>
                   <p className="truncate text-muted-foreground text-xs">
                     {org.slug}
-                    {org.domain && ` \u00B7 ${org.domain}`}
+                    {!!org.domain && ` \u00B7 ${org.domain}`}
                   </p>
                 </div>
               </div>

@@ -7,11 +7,11 @@ import { getOrganizations } from "@/server/organizations";
 import { getCurrentUser } from "@/server/users";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
   robots: {
-    index: false,
     follow: false,
+    index: false,
   },
+  title: "Dashboard",
 };
 
 async function HeaderContent() {

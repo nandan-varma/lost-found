@@ -15,17 +15,17 @@ neonConfig.webSocketConstructor = ws;
 const pool = new Pool({ connectionString: getEnv("DATABASE_URL") });
 
 const COLORS = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
   blue: "\x1b[34m",
-  magenta: "\x1b[35m",
+  bold: "\x1b[1m",
   cyan: "\x1b[36m",
-  white: "\x1b[37m",
+  dim: "\x1b[2m",
   gray: "\x1b[90m",
+  green: "\x1b[32m",
+  magenta: "\x1b[35m",
+  red: "\x1b[31m",
+  reset: "\x1b[0m",
+  white: "\x1b[37m",
+  yellow: "\x1b[33m",
 };
 
 const SQL_KEYWORDS = [
@@ -140,7 +140,7 @@ class PrettySqlLogger extends DefaultLogger {
 }
 
 export const db = drizzle(pool, {
-  schema,
   logger:
     process.env.NODE_ENV === "development" ? new PrettySqlLogger() : false,
+  schema,
 });

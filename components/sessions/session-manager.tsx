@@ -114,7 +114,6 @@ export function SessionManager() {
       await authClient.signOut().catch(() => undefined);
       replace("/login");
       refresh();
-      return;
     } catch {
       toast.error("Unable to revoke sessions");
     } finally {

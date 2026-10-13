@@ -31,6 +31,9 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
   const mutation = useMutation({
     mutationFn: (newDomain: string) =>
       updateOrganizationDomain(orgId, newDomain),
+    onError: () => {
+      toast.error("Failed to update domain");
+    },
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Domain updated");
@@ -41,9 +44,6 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
       } else {
         toast.error(result.error);
       }
-    },
-    onError: () => {
-      toast.error("Failed to update domain");
     },
   });
 
@@ -95,7 +95,7 @@ export function SetDomainForm({ orgId, currentDomain }: SetDomainFormProps) {
               "Save"
             )}
           </Button>
-          {currentDomain && (
+          {!!currentDomain && (
             <Button
               disabled={mutation.isPending}
               onClick={handleRemove}

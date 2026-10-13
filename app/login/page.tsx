@@ -4,12 +4,12 @@ import Link from "next/link";
 import { LoginForm } from "@/components/forms/login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in",
-  description:
-    "Sign in with your organization account to access Lost and Found.",
   alternates: {
     canonical: "/login",
   },
+  description:
+    "Sign in with your organization account to access Lost and Found.",
+  title: "Sign in",
 };
 
 export default function LoginPage() {

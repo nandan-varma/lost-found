@@ -47,6 +47,9 @@ export function JoinOrganizationDialog({
 
   const mutation = useMutation({
     mutationFn: (orgId: string) => joinOrganization(orgId),
+    onError: () => {
+      toast.error("Failed to join organization");
+    },
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Joined organization successfully");
@@ -58,9 +61,6 @@ export function JoinOrganizationDialog({
       } else {
         toast.error(result.error);
       }
-    },
-    onError: () => {
-      toast.error("Failed to join organization");
     },
   });
 

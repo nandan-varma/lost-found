@@ -30,10 +30,10 @@ export function ItemList({
   const baseHref = `/app/${organizationSlug}`;
 
   const { data: items } = useQuery({
-    queryKey: queryKeys.items.filtered(organizationId, activeStatus),
+    initialData: initialItems,
     queryFn: () =>
       getItems(organizationId, activeStatus as "lost" | "found" | undefined),
-    initialData: initialItems,
+    queryKey: queryKeys.items.filtered(organizationId, activeStatus),
   });
 
   return (
@@ -53,7 +53,7 @@ export function ItemList({
         </Tabs>
 
         <div className="flex flex-wrap gap-2">
-          {isAdmin && (
+          {!!isAdmin && (
             <Button
               asChild
               className="flex-1 sm:flex-none"

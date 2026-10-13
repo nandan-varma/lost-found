@@ -21,8 +21,8 @@ export function LoginForm({
             className="w-full"
             onClick={() =>
               authClient.signIn.social({
-                provider: "microsoft",
                 callbackURL: "/app",
+                provider: "microsoft",
               })
             }
             variant="outline"

@@ -5,11 +5,11 @@ import { SessionManager } from "@/components/sessions/session-manager";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Sessions",
   robots: {
-    index: false,
     follow: false,
+    index: false,
   },
+  title: "Sessions",
 };
 
 export default function SessionsPage() {

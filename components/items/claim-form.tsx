@@ -37,12 +37,12 @@ export function ClaimForm({
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof claimItemSchema>>({
-    resolver: zodResolver(claimItemSchema),
     defaultValues: {
-      claimantName: "",
       claimantEmail: "",
+      claimantName: "",
       message: "",
     },
+    resolver: zodResolver(claimItemSchema),
   });
 
   const mutation = useMutation({

@@ -32,16 +32,19 @@ export function CreateOrganizationForm({
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       slug: "",
     },
+    resolver: zodResolver(formSchema),
   });
 
   const mutation = useMutation({
     mutationFn: (values: z.infer<typeof formSchema>) =>
       createOrganization(values.name, values.slug),
+    onError: () => {
+      toast.error("Failed to create organization");
+    },
     onSuccess: (result) => {
       if (result.success) {
         toast.success("Organization created successfully");
@@ -52,9 +55,6 @@ export function CreateOrganizationForm({
       } else {
         toast.error(result.error);
       }
-    },
-    onError: () => {
-      toast.error("Failed to create organization");
     },
   });
 

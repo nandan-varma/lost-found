@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { db } from "@/db/drizzle";
@@ -44,8 +44,8 @@ export async function getOrganizations(
     });
 
     logger.info("getOrganizations: success", {
-      userId: resolvedUserId,
       orgCount: organizations.length,
+      userId: resolvedUserId,
     });
 
     return organizations;
@@ -73,8 +73,8 @@ export async function getActiveOrganization(
 
   try {
     const memberUser = await db.query.member.findFirst({
-      where: eq(member.userId, userId),
       orderBy: desc(member.createdAt),
+      where: eq(member.userId, userId),
     });
 
     if (!memberUser) {
@@ -126,10 +126,10 @@ export async function getAllOrganizations(): Promise<Organization[]> {
     );
 
     logger.info("getAllOrganizations: success", {
-      userId: session.user.id,
       domain: emailDomain,
-      totalOrgs: organizations.length,
       filteredOrgs: filtered.length,
+      totalOrgs: organizations.length,
+      userId: session.user.id,
     });
 
     return filtered;
@@ -145,7 +145,7 @@ export async function joinOrganization(
   const session = await getSession();
   if (!session) {
     logger.warn("joinOrganization: not authenticated");
-    return { success: false, error: "Not authenticated" };
+    return { error: "Not authenticated", success: false };
   }
 
   try {
@@ -153,7 +153,7 @@ export async function joinOrganization(
 
     if (!sessionData) {
       logger.warn("joinOrganization: not authenticated");
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     const { currentUser } = sessionData;
@@ -169,7 +169,7 @@ export async function joinOrganization(
 
     if (!targetOrg) {
       logger.info("joinOrganization: org not found", { orgId });
-      return { success: false, error: "Organization not found" };
+      return { error: "Organization not found", success: false };
     }
 
     const emailDomain = currentUser.email.split("@")[1]?.toLowerCase();
@@ -179,19 +179,19 @@ export async function joinOrganization(
       targetOrg.domain !== emailDomain
     ) {
       logger.warn("joinOrganization: domain mismatch", {
-        orgId,
-        userId: currentUser.id,
         emailDomain,
         orgDomain: targetOrg.domain,
+        orgId,
+        userId: currentUser.id,
       });
       return {
-        success: false,
         error: "You are not eligible to join this organization",
+        success: false,
       };
     }
 
     const existing = await db.query.member.findFirst({
-      where: (fields, { eq, and }) =>
+      where: (fields) =>
         and(
           eq(fields.userId, currentUser.id),
           eq(fields.organizationId, orgId)
@@ -204,17 +204,17 @@ export async function joinOrganization(
         userId: currentUser.id,
       });
       return {
-        success: false,
         error: "You are already a member of this organization",
+        success: false,
       };
     }
 
     await db.insert(member).values({
+      createdAt: new Date(),
       id: randomUUID(),
       organizationId: orgId,
-      userId: currentUser.id,
       role: "member",
-      createdAt: new Date(),
+      userId: currentUser.id,
     });
 
     logger.info("joinOrganization: success", {
@@ -222,10 +222,10 @@ export async function joinOrganization(
       userId: currentUser.id,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
     logger.error("joinOrganization: failed", { error, orgId });
-    return { success: false, error: "Failed to join organization" };
+    return { error: "Failed to join organization", success: false };
   }
 }
 
@@ -237,8 +237,8 @@ export async function createOrganization(
     if (process.env.FEATURE_FLAG_CREATE_ORGANIZATION !== "true") {
       logger.warn("createOrganization: feature flag disabled", { name, slug });
       return {
-        success: false,
         error: "Organization creation is disabled",
+        success: false,
       };
     }
 
@@ -246,7 +246,7 @@ export async function createOrganization(
 
     if (!session) {
       logger.warn("createOrganization: not authenticated");
-      return { success: false, error: "Not authenticated" };
+      return { error: "Not authenticated", success: false };
     }
 
     logger.info("createOrganization: attempt", {
@@ -258,7 +258,7 @@ export async function createOrganization(
     const parsed = createOrganizationSchema.safeParse({ name, slug });
 
     if (!parsed.success) {
-      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const { fieldErrors } = parsed.error.flatten();
       logger.warn("createOrganization: validation failed", {
         fieldErrors,
         name,
@@ -268,8 +268,8 @@ export async function createOrganization(
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
       return {
-        success: false,
         error: messages || "Invalid organization data",
+        success: false,
       };
     }
 
@@ -286,16 +286,16 @@ export async function createOrganization(
       .where(eq(organization.id, org.id));
 
     logger.info("createOrganization: success", {
-      orgId: org.id,
-      name,
-      slug,
       domain,
+      name,
+      orgId: org.id,
+      slug,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
     logger.error("createOrganization: failed", { error, name, slug });
-    return { success: false, error: "Failed to create organization" };
+    return { error: "Failed to create organization", success: false };
   }
 }
 
@@ -316,7 +316,7 @@ export async function findOrgByDomain(
 
     return org ?? null;
   } catch (error) {
-    logger.error("findOrgByDomain: failed", { error, domain });
+    logger.error("findOrgByDomain: failed", { domain, error });
     return null;
   }
 }
@@ -328,19 +328,19 @@ export async function updateOrganizationDomain(
   const session = await getSession();
   if (!session) {
     logger.warn("updateOrganizationDomain: not authenticated");
-    return { success: false, error: "Not authenticated" };
+    return { error: "Not authenticated", success: false };
   }
 
   try {
-    logger.info("updateOrganizationDomain: attempt", { orgId, domain });
+    logger.info("updateOrganizationDomain: attempt", { domain, orgId });
 
     const admin = await isOrgAdmin(orgId);
 
     if (!admin) {
       logger.warn("updateOrganizationDomain: not authorized", { orgId });
       return {
-        success: false,
         error: "Only admins can update organization settings",
+        success: false,
       };
     }
 
@@ -348,13 +348,13 @@ export async function updateOrganizationDomain(
 
     if (!parsedDomain.success) {
       logger.warn("updateOrganizationDomain: invalid domain", {
-        orgId,
         domain,
         error: parsedDomain.error.message,
+        orgId,
       });
       return {
-        success: false,
         error: "Invalid domain format",
+        success: false,
       };
     }
 
@@ -369,13 +369,13 @@ export async function updateOrganizationDomain(
 
       if (existing && existing.id !== orgId) {
         logger.warn("updateOrganizationDomain: domain taken", {
-          orgId,
           domain: cleanDomain,
           existingOrgId: existing.id,
+          orgId,
         });
         return {
-          success: false,
           error: "This domain is already in use by another organization",
+          success: false,
         };
       }
     }
@@ -386,14 +386,14 @@ export async function updateOrganizationDomain(
       .where(eq(organization.id, orgId));
 
     logger.info("updateOrganizationDomain: success", {
-      orgId,
       domain: cleanDomain,
+      orgId,
     });
 
-    return { success: true, data: null };
+    return { data: null, success: true };
   } catch (error) {
-    logger.error("updateOrganizationDomain: failed", { error, orgId, domain });
-    return { success: false, error: "Failed to update domain" };
+    logger.error("updateOrganizationDomain: failed", { domain, error, orgId });
+    return { error: "Failed to update domain", success: false };
   }
 }
 
@@ -425,8 +425,8 @@ export const getOrganizationBySlug = cache(
       if (!session) {
         return {
           ...(organizationBySlug as OrganizationWithMembers),
-          members: [],
           isAdmin: false,
+          members: [],
         };
       }
 
@@ -439,8 +439,8 @@ export const getOrganizationBySlug = cache(
       if (!isAdmin) {
         return {
           ...(organizationBySlug as OrganizationWithMembers),
-          members: [],
           isAdmin: false,
+          members: [],
         };
       }
 

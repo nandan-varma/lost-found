@@ -19,11 +19,11 @@ export async function generateMetadata({
   const { slug } = await params;
 
   return {
-    title: `${slug} items`,
     robots: {
-      index: false,
       follow: false,
+      index: false,
     },
+    title: `${slug} items`,
   };
 }
 

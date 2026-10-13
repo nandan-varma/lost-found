@@ -3,21 +3,21 @@ import { z } from "zod";
 const DOMAIN_REGEX = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/;
 
 export const createItemSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100),
   description: z
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(2000),
-  status: z.enum(["lost", "found"]),
   organizationId: z.string().min(1, "Organization is required"),
+  status: z.enum(["lost", "found"]),
+  title: z.string().min(3, "Title must be at least 3 characters").max(100),
 });
 
 export const claimItemSchema = z.object({
+  claimantEmail: z.string().email("Invalid email address"),
   claimantName: z
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(100),
-  claimantEmail: z.string().email("Invalid email address"),
   message: z.string().max(500).optional(),
 });
 
